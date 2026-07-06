@@ -18,6 +18,7 @@
 			await Promise.all([
 				import('@awesome.me/webawesome/dist/components/button/button.js'),
 				import('@awesome.me/webawesome/dist/components/input/input.js'),
+				import('@awesome.me/webawesome/dist/components/textarea/textarea.js'),
 				import('@awesome.me/webawesome/dist/components/card/card.js'),
 				import('@awesome.me/webawesome/dist/components/callout/callout.js')
 			]);

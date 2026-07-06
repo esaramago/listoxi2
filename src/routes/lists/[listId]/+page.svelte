@@ -6,6 +6,7 @@
 	import { triggerSync } from '@/lib/sync'
 	import Grid from '@/components/ui/Grid.svelte'
 	import Header from '@/components/Header.svelte'
+  import ProductCard from '@/components/ProductCard.svelte'
 
 	const listId = $page.params.listId || ''
 
@@ -22,8 +23,8 @@
 	);
 
 	// Collapsible bought items state
-	let showBought = $state(false);
-	let boughtItemsData = $state<any[]>([]);
+	let showBought = $state(false)
+	let boughtItemsData = $state<any[]>([])
 
 	// Only subscribe/load bought items when the section is opened
 	$effect(() => {
@@ -35,62 +36,68 @@
 					.and((item) => item.bought && item.sync_status !== 'deleted')
 					.toArray()
 			).subscribe((data) => {
-				boughtItemsData = data;
-			});
-			return () => sub.unsubscribe();
+				boughtItemsData = data
+			})
+			return () => sub.unsubscribe()
 		} else {
-			boughtItemsData = [];
+			boughtItemsData = []
 		}
-	});
+	})
 
-	async function toggleBought(item: any) {
-		await db.items.update(item.id, {
+	async function toggleBought(itemId: string) {
+		const item = await db.items.get(itemId)
+		if (!item) return
+    await db.items.update(itemId, {
 			bought: !item.bought,
 			sync_status: item.sync_status === 'created' ? 'created' : 'updated',
 			updated: new Date().toISOString()
-		});
-		triggerSync();
+		})
+		triggerSync()
 	}
 
-	async function deleteItem(item: any) {
-		if (item.sync_status === 'created') {
-			await db.items.delete(item.id);
-		} else {
-			await db.items.update(item.id, {
-				sync_status: 'deleted',
-				updated: new Date().toISOString()
-			});
-		}
-		triggerSync();
+	async function deleteItem(itemId: string) {
+		const item = await db.items.get(itemId)
+		if (!item) return
+    if (confirm('Tem a certeza que deseja apagar este produto?')) {
+      if (item.sync_status === 'created') {
+        await db.items.delete(itemId)
+      } else {
+        await db.items.update(itemId, {
+          sync_status: 'deleted',
+          updated: new Date().toISOString()
+        })
+      }
+      triggerSync()
+    }
 	}
 
 	async function deleteList() {
 		if (confirm('Tem a certeza que deseja apagar esta lista e todos os seus produtos?')) {
-			const currentList = await db.lists.get(listId);
+			const currentList = await db.lists.get(listId)
 			if (currentList) {
 				if (currentList.sync_status === 'created') {
-					await db.lists.delete(listId);
-					await db.items.where('list').equals(listId).delete();
+					await db.lists.delete(listId)
+					await db.items.where('list').equals(listId).delete()
 				} else {
 					await db.lists.update(listId, {
 						sync_status: 'deleted',
 						updated: new Date().toISOString()
-					});
+					})
 					// Soft delete all items in this list
-					const itemsInList = await db.items.where('list').equals(listId).toArray();
+					const itemsInList = await db.items.where('list').equals(listId).toArray()
 					for (const item of itemsInList) {
 						if (item.sync_status === 'created') {
-							await db.items.delete(item.id);
+							await db.items.delete(item.id)
 						} else {
 							await db.items.update(item.id, {
 								sync_status: 'deleted',
 								updated: new Date().toISOString()
-							});
+							})
 						}
 					}
 				}
-				triggerSync();
-				goto('/');
+				triggerSync()
+				goto('/')
 			}
 		}
 	}
@@ -133,103 +140,73 @@
 	</Header>
 
 	{#if $list}
-		<!-- Action line with "Adicionar" button -->
-		<Grid justify="space-between">
-			{#if $list}
-				<p>{$openItems ? $openItems.length : 0} produtos</p>
-			{/if}
-			<wa-button href="/lists/{listId}/create" appearance="plain" variant="brand">
-        <wa-icon name="plus"></wa-icon>
-				Adicionar produto
-			</wa-button>
-		</Grid>
 
-		<!-- Open Items -->
-		<div class="items-list">
-			{#if !$openItems}
-				<div class="loading-products">
-					A carregar produtos...
-				</div>
-			{:else if $openItems.length === 0}
-				<div class="empty-products">
-					Nenhum produto em falta.
-				</div>
-			{:else}
-				{#each $openItems as item (item.id)}
-					<wa-card class="card">
-            <button onclick={(e) => { e.stopPropagation(); toggleBought(item); }} title="Marcar como comprado">
-              <wa-icon name="circle" class="check-icon"></wa-icon>
-            </button>
-						<button class="card__link" onclick={() => goto(`/lists/${listId}/items/${item.id}`)} role="link" tabindex="0" onkeydown={(e) => e.key === 'Enter' && goto(`/lists/${listId}/items/${item.id}`)}>
-							<div>
-                {item.quantity}
-								<span class="product-name">{item.name}</span>
-								{#if item.details}
-									<span class="item-details">{item.details}</span>
-								{/if}
-							</div>
-						</button>
-						<div>
-							<button onclick={() => deleteItem(item)} title="Apagar produto">
-								<wa-icon name="trash" class="delete-icon"></wa-icon>
-							</button>
-						</div>
-					</wa-card>
-				{/each}
-			{/if}
-		</div>
+    <Grid direction="column" gap="l">
+      <!-- Action line with "Adicionar" button -->
+      <Grid justify="space-between">
+        {#if $list}
+          <p>{$openItems ? $openItems.length : 0} produtos</p>
+        {/if}
+        <wa-button href="/lists/{listId}/create" appearance="plain" variant="brand">
+          <wa-icon name="plus"></wa-icon>
+          Adicionar produto
+        </wa-button>
+      </Grid>
 
-		<!-- Collapsible Bought Items -->
-		<div class="bought-section">
-			<div class="section-title" onclick={() => showBought = !showBought} role="button" tabindex="0" onkeydown={(e) => e.key === 'Enter' && (showBought = !showBought)}>
-				<wa-icon name={showBought ? 'chevron-up' : 'chevron-down'} class="chevron-icon"></wa-icon>
-				<span>Concluídos ({showBought && boughtItemsData ? `${boughtItemsData.length} itens` : ''})</span>
-			</div>
+      <!-- Open Items -->
+      <div>
+        {#if !$openItems}
+          <div class="loading-products">
+            A carregar produtos...
+          </div>
+        {:else if $openItems.length === 0}
+          <div class="empty-products">
+            Nenhum produto em falta.
+          </div>
+        {:else}
+          {#each $openItems as item (item.id)}
+            <ProductCard
+              productName={item.name}
+              productQuantity={item.quantity}
+              productDetails={item.details}
+              productId={item.id}
+              {listId}
+              toggleBought={() => toggleBought(item.id)}
+              deleteItem={() => deleteItem(item.id)}
+              isBought={item.bought}
+            />
+          {/each}
+        {/if}
+      </div>
 
-			{#if showBought}
-				<div class="bought-list">
-					{#if boughtItemsData.length === 0}
-						<div class="empty-bought-msg">
-							Nenhum produto concluído nesta lista.
-						</div>
-					{:else}
-						{#each boughtItemsData as item (item.id)}
-							<wa-card class="product-card bought">
-								<div class="product-card-left" onclick={() => goto(`/lists/${listId}/items/${item.id}`)} role="link" tabindex="0" onkeydown={(e) => e.key === 'Enter' && goto(`/lists/${listId}/items/${item.id}`)}>
-									<button class="check-btn check-btn-bought" onclick={(e) => { e.stopPropagation(); toggleBought(item); }} title="Marcar como pendente">
-										<wa-icon name="check-circle" class="check-icon"></wa-icon>
-									</button>
-									<div class="item-text-container">
-										<span class="product-name">{item.name}</span>
-										{#if item.details}
-											<span class="item-details">{item.details}</span>
-										{/if}
-									</div>
-								</div>
-								<div class="product-card-right">
-									<span class="product-qty">{item.quantity}x</span>
-									<button class="delete-btn" onclick={() => deleteItem(item)} title="Apagar produto">
-										<wa-icon name="trash" class="delete-icon"></wa-icon>
-									</button>
-								</div>
-							</wa-card>
-						{/each}
-					{/if}
-				</div>
-			{/if}
-		</div>
+      <!-- Collapsible Bought Items -->
+      <div>
+        <button onclick={() => showBought = !showBought} onkeydown={(e) => e.key === 'Enter' && (showBought = !showBought)}>
+          <wa-icon name={showBought ? 'chevron-up' : 'chevron-down'} class="chevron-icon"></wa-icon>
+          <span>Concluídos {showBought && boughtItemsData ? `(${boughtItemsData.length} itens)` : ''}</span>
+        </button>
+
+        {#if showBought}
+          <div>
+            {#if boughtItemsData.length === 0}
+              <p>Nenhum produto concluído nesta lista.</p>
+            {:else}
+              {#each boughtItemsData as item (item.id)}
+                <ProductCard
+                  productName={item.name}
+                  productQuantity={item.quantity}
+                  productDetails={item.details}
+                  productId={item.id}
+                  isBought={item.bought}
+                  {listId}
+                  toggleBought={() => toggleBought(item.id)}
+                  deleteItem={() => deleteItem(item.id)}
+                />
+              {/each}
+            {/if}
+          </div>
+        {/if}
+      </div>
+    </Grid>
 	{/if}
 </div>
-
-<style>
- .card {
-   &::part(body) {
-     display: flex;
-     justify-content: space-between;
-     align-items: center;
-   }
- }
- .card__link {
-  flex-grow: 1;
- }
-</style>

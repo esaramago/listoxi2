@@ -20,3 +20,6 @@ textarea {
   min-height: var(--input-height);
   color: inherit;
 }
+button {
+  cursor: pointer;
+}

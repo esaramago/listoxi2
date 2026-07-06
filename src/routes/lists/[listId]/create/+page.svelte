@@ -70,18 +70,17 @@
 			<Grid direction="column" gap="m">
 				<wa-input
 					id="item-name"
-					label="Nome do Produto *"
+					label="Nome do Produto"
 					type="text"
 					placeholder="Ex: Leite, Pão, Maçãs..."
 					value={name}
 					oninput={(e: any) => name = e.target.value}
 					required
-					autofocus
 				></wa-input>
 
 				<wa-input
 					id="item-qty"
-					label="Quantidade *"
+					label="Quantidade"
 					type="number"
 					min="1"
 					value={quantity.toString()}
