@@ -11,10 +11,16 @@
 
 	const listId = $page.params.listId || ''
 
+	interface SharedMember {
+		id?: string
+		email: string
+		isPending: boolean
+	}
+
 	let listName = $state('')
 	let selectedEmoji = $state('')
 	let emailInput = $state('')
-	let sharedEmails = $state<string[]>([])
+	let sharedMembers = $state<SharedMember[]>([])
 	let loading = $state(false)
 	let errorMsg = $state('')
 	let listLoaded = $state(false)
@@ -26,7 +32,39 @@
 		if ($listData && !listLoaded) {
 			listName = $listData.name
 			selectedEmoji = $listData.emoji || ''
-			sharedEmails = [...($listData.shared_emails || [])]
+			
+			const pending = ($listData.shared_emails || []).map(email => ({
+				email,
+				isPending: true
+			}))
+			sharedMembers = [...pending]
+
+			const resolvedIds = $listData.shared_with || []
+			if (resolvedIds.length > 0) {
+				Promise.all(
+					resolvedIds.map(async (id) => {
+						try {
+							const userRecord = await pb.collection('users').getOne(id)
+							return {
+								id,
+								email: userRecord.email || userRecord.username || id,
+								isPending: false
+							}
+						} catch (e) {
+							return {
+								id,
+								email: id,
+								isPending: false
+							}
+						}
+					})
+				).then((resolvedMembers) => {
+					const resolvedEmails = resolvedMembers.map(m => m.email)
+					const uniquePending = pending.filter(p => !resolvedEmails.includes(p.email))
+					sharedMembers = [...uniquePending, ...resolvedMembers]
+				})
+			}
+			
 			listLoaded = true
 		}
 	})
@@ -41,18 +79,21 @@
 			return
 		}
 
-		if (sharedEmails.includes(email)) {
+		if (sharedMembers.some(m => m.email === email)) {
 			errorMsg = 'Este email já foi adicionado.'
 			return
 		}
 
-		sharedEmails.push(email)
+		sharedMembers.push({
+			email,
+			isPending: true
+		})
 		emailInput = ''
 		errorMsg = ''
 	}
 
-	function removeEmail(index: number) {
-		sharedEmails.splice(index, 1)
+	function removeMember(member: SharedMember) {
+		sharedMembers = sharedMembers.filter(m => m.email !== member.email)
 	}
 
 	async function handleUpdate(e: SubmitEvent) {
@@ -69,16 +110,23 @@
 				throw new Error('Lista não encontrada.')
 			}
 
-			let sharedWithUserIds = [...currentList.shared_with]
-			let pendingEmails = [...(currentList.shared_emails || [])]
+			// Membros resolvidos que o utilizador manteve
+			const keptUserIds = sharedMembers
+				.filter(m => !m.isPending && m.id)
+				.map(m => m.id as string)
+
+			// Emails pendentes que o utilizador manteve ou adicionou
+			const currentPendingEmails = sharedMembers
+				.filter(m => m.isPending)
+				.map(m => m.email)
+
+			let sharedWithUserIds = [...keptUserIds]
+			let pendingEmails: string[] = []
 
 			const online = $isOnline
 
-			// Filter out emails that are already in pendingEmails
-			const newEmails = sharedEmails.filter(email => !pendingEmails.includes(email))
-
-			if (online && newEmails.length > 0) {
-				for (const email of newEmails) {
+			if (online && currentPendingEmails.length > 0) {
+				for (const email of currentPendingEmails) {
 					try {
 						const userId = await inviteUserByEmail(email)
 						if (!sharedWithUserIds.includes(userId)) {
@@ -95,7 +143,7 @@
 					}
 				}
 			} else {
-				pendingEmails = [...pendingEmails, ...newEmails]
+				pendingEmails = [...currentPendingEmails]
 			}
 
 			await db.lists.put({
@@ -166,16 +214,19 @@
 							</wa-button>
 						</Grid>
 
-						{#if sharedEmails.length > 0}
+						{#if sharedMembers.length > 0}
 							<div class="shared-emails-container">
-								<span class="shared-title">Emails Adicionados / Convidados</span>
+								<span class="shared-title">Membros Partilhados / Convidados</span>
 								<ul class="shared-list">
-									{#each sharedEmails as email, idx}
+									{#each sharedMembers as member}
 										<li class="shared-item">
 											<span class="shared-user">
-												👤 {email}
+												👤 {member.email}
+												{#if member.isPending}
+													<span class="pending-badge">Pendente</span>
+												{/if}
 											</span>
-											<button type="button" onclick={() => removeEmail(idx)} class="btn-remove-email">
+											<button type="button" onclick={() => removeMember(member)} class="btn-remove-email" title="Remover partilha">
 												&times;
 											</button>
 										</li>
@@ -245,6 +296,18 @@
 		align-items: center;
 		gap: var(--wa-space-xs);
 		color: var(--wa-color-neutral-90);
+	}
+	.pending-badge {
+		font-size: var(--wa-font-size-2xs);
+		background-color: var(--wa-color-neutral-30);
+		color: var(--wa-color-neutral-70);
+		padding: var(--wa-space-3xs) var(--wa-space-2xs);
+		border-radius: var(--wa-border-radius-s);
+		font-weight: 600;
+		text-transform: uppercase;
+		margin-left: var(--wa-space-xs);
+		display: inline-flex;
+		align-items: center;
 	}
 	.btn-remove-email {
 		background: none;

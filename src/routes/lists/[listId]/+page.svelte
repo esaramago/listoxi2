@@ -7,8 +7,57 @@
 	import Grid from '@/components/ui/Grid.svelte'
 	import Header from '@/components/Header.svelte'
   import ProductCard from '@/components/ProductCard.svelte'
+	import { pb } from '@/lib/pb'
+	import SyncBadge from '@/components/SyncBadge.svelte'
 
 	const listId = $page.params.listId || ''
+
+	let memberEmails = $state<string[]>([])
+
+	$effect(() => {
+		if ($list) {
+			const resolvedIds = $list.shared_with || []
+			const pending = $list.shared_emails || []
+			
+			memberEmails = [...pending]
+
+			if (resolvedIds.length > 0) {
+				Promise.all(
+					resolvedIds.map(async (id) => {
+						try {
+							const userRecord = await pb.collection('users').getOne(id)
+							return userRecord.email || userRecord.username || id
+						} catch (e) {
+							return null
+						}
+					})
+				).then((results) => {
+					const resolvedEmails = results.filter((r): r is string => !!r)
+					memberEmails = [...pending, ...resolvedEmails]
+				})
+			}
+		} else {
+			memberEmails = []
+		}
+	})
+
+	let shareTooltip = $derived.by(() => {
+		if (memberEmails.length === 0) {
+			return 'Esta lista está partilhada com outros utilizadores'
+		}
+		return `Partilhada com: ${memberEmails.join(', ')}`
+	})
+
+	let showMembersList = $state(false)
+
+	function handleOutsideClick(event: MouseEvent) {
+		if (showMembersList) {
+			const container = document.querySelector('.share-badge-container')
+			if (container && !container.contains(event.target as Node)) {
+				showMembersList = false
+			}
+		}
+	}
 
 	// Reactive query for the list details
 	const list = liveQuery(() => db.lists.get(listId))
@@ -103,6 +152,8 @@
 	}
 </script>
 
+<svelte:window onclick={handleOutsideClick} />
+
 <div class="container">
 	<Header backHref="/">
 		{#snippet titleSnippet()}
@@ -123,6 +174,41 @@
 					</span>
 					<span>{$list.name}</span>
 				</Grid>
+			{/if}
+		{/snippet}
+		{#snippet subtitleSnippet()}
+			{#if $list}
+				<div class="subtitle-container">
+					<SyncBadge />
+					{#if ($list.shared_with && $list.shared_with.length > 0) || ($list.shared_emails && $list.shared_emails.length > 0)}
+						<div class="share-badge-container">
+							<button 
+								type="button" 
+								class="share-badge" 
+								onclick={(e) => { e.stopPropagation(); showMembersList = !showMembersList }}
+								title={shareTooltip}
+							>
+								<wa-icon name="user-group"></wa-icon>
+								<span>Partilhada</span>
+							</button>
+							
+							{#if showMembersList}
+								<div class="share-popover">
+									<div class="popover-header">Partilhada com:</div>
+									<ul class="popover-list">
+										{#if memberEmails.length === 0}
+											<li>Lista partilhada ({$list.shared_with.length} {$list.shared_with.length === 1 ? 'pessoa' : 'pessoas'})</li>
+										{:else}
+											{#each memberEmails as email}
+												<li>👤 {email}</li>
+											{/each}
+										{/if}
+									</ul>
+								</div>
+							{/if}
+						</div>
+					{/if}
+				</div>
 			{/if}
 		{/snippet}
 		{#snippet actions()}
@@ -210,3 +296,120 @@
     </Grid>
 	{/if}
 </div>
+
+<style>
+	.subtitle-container {
+		display: inline-flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: var(--wa-space-s);
+		margin-top: var(--wa-space-3xs);
+	}
+
+	.share-badge-container {
+		position: relative;
+		display: inline-flex;
+	}
+
+	.share-badge {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--wa-space-3xs);
+		background-color: var(--wa-color-brand-90);
+		color: var(--wa-color-brand-30);
+		padding: var(--wa-space-3xs) var(--wa-space-s);
+		border-radius: var(--wa-border-radius-pill);
+		font-size: var(--wa-font-size-s);
+		font-weight: 600;
+		border: 1px solid var(--wa-color-brand-80);
+		height: 24px;
+		box-sizing: border-box;
+		cursor: pointer;
+		outline: none;
+		transition: background-color 0.2s, border-color 0.2s;
+	}
+
+	.share-badge:hover, .share-badge:focus {
+		background-color: var(--wa-color-brand-80);
+		border-color: var(--wa-color-brand-70);
+	}
+
+	.share-badge wa-icon {
+		font-size: var(--wa-font-size-s);
+	}
+
+	.share-popover {
+		position: absolute;
+		top: calc(100% + 6px);
+		left: 0;
+		z-index: 100;
+		background-color: #ffffff;
+		border: 1px solid var(--wa-color-neutral-30);
+		border-radius: var(--wa-border-radius-m);
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+		padding: var(--wa-space-s);
+		min-width: 200px;
+		max-width: 280px;
+		text-align: left;
+		animation: popoverFadeIn 0.15s ease-out;
+	}
+
+	@keyframes popoverFadeIn {
+		from {
+			opacity: 0;
+			transform: translateY(-4px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	.popover-header {
+		font-size: var(--wa-font-size-xs);
+		color: var(--wa-color-neutral-60);
+		margin-bottom: var(--wa-space-3xs);
+		text-transform: uppercase;
+		letter-spacing: 0.5px;
+		font-weight: 700;
+	}
+
+	.popover-list {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		max-height: 150px;
+		overflow-y: auto;
+	}
+
+	.popover-list li {
+		font-size: var(--wa-font-size-s);
+		color: var(--wa-color-neutral-90);
+		padding: var(--wa-space-3xs) 0;
+		border-bottom: 1px solid var(--wa-color-neutral-20);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.popover-list li:last-child {
+		border-bottom: none;
+	}
+
+	:global(.wa-dark) .share-badge {
+		background-color: var(--wa-color-brand-10);
+		color: var(--wa-color-brand-80);
+		border-color: var(--wa-color-brand-20);
+	}
+
+	:global(.wa-dark) .share-badge:hover, :global(.wa-dark) .share-badge:focus {
+		background-color: var(--wa-color-brand-20);
+		border-color: var(--wa-color-brand-30);
+	}
+
+	:global(.wa-dark) .share-popover {
+		background-color: var(--wa-color-neutral-10);
+		border-color: var(--wa-color-neutral-20);
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+	}
+</style>
