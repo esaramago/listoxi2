@@ -17,5 +17,8 @@ VOLUME /pb/pb_data
 
 EXPOSE 8090
 
+# Copy migrations
+COPY ./pb_migrations /pb/pb_migrations
+
 # Start PocketBase
 CMD ["/pb/pocketbase", "serve", "--http=0.0.0.0:8090"]
