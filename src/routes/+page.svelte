@@ -129,16 +129,6 @@
 		padding: var(--wa-space-2xl);
 		color: var(--wa-color-neutral-60);
 	}
-
-	.fab-btn {
-		--size-large: 56px;
-		box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.4);
-	}
-	.fab-icon {
-		width: var(--wa-space-l);
-		height: var(--wa-space-l);
-	}
-
   .card {
     display: flex;
     width: 100%;
