@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10b981" />
+      <stop offset="100%" stop-color="#047857" />
+    </linearGradient>
+    <!-- Icon Drop Shadow -->
+    <filter id="shadow" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="12" stdDeviation="12" flood-color="#000000" flood-opacity="0.2" />
+    </filter>
+  </defs>
+
+  <!-- Base rounded rectangle for PWA icon -->
+  <rect width="512" height="512" rx="128" fill="url(#bg-grad)" />
+
+  <!-- Inside graphic (Sleek shopping checklist card) -->
+  <g filter="url(#shadow)">
+    <!-- Clipboard/Card centered inside the safe area (safe area is a 307x307 circle centered at 256, 256) -->
+    <rect x="146" y="146" width="220" height="220" rx="36" fill="#ffffff" />
+    
+    <!-- Checklist items inside the white card -->
+    <!-- Item 1: Checked -->
+    <rect x="176" y="181" width="28" height="28" rx="6" fill="#10b981" />
+    <path d="M183 195 l4 4 l10 -10" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+    <line x1="218" y1="195" x2="326" y2="195" stroke="#10b981" stroke-width="8" stroke-linecap="round" opacity="0.8" />
+
+    <!-- Item 2: Checked -->
+    <rect x="176" y="227" width="28" height="28" rx="6" fill="#10b981" />
+    <path d="M183 241 l4 4 l10 -10" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+    <line x1="218" y1="241" x2="306" y2="241" stroke="#10b981" stroke-width="8" stroke-linecap="round" opacity="0.8" />
+
+    <!-- Item 3: Unchecked/Empty -->
+    <rect x="176" y="273" width="28" height="28" rx="6" fill="none" stroke="#a1a1aa" stroke-width="3" />
+    <line x1="218" y1="287" x2="316" y2="287" stroke="#cbd5e1" stroke-width="8" stroke-linecap="round" />
+  </g>
+</svg>
