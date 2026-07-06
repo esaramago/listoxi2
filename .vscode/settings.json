@@ -1,0 +1,14 @@
+{
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true,
+    "editor.detectIndentation": false,
+    "js/ts.preferences.quoteStyle": "single",
+    "search.exclude": {
+      "node_modules": true,
+      "dist": true,
+      "build": true,
+      "package-lock.json": true,
+      ".vscode": true
+    }
+    
+}
