@@ -28,7 +28,7 @@
     <span class="card__quantity">{productQuantity}</span>
     {productName}
     {#if productDetails}
-      <p>{productDetails}</p>
+      <p class="card__details">{productDetails}</p>
     {/if}
   </button>
   <wa-button onclick={() => deleteItem(productId)} title="Apagar produto" appearance="plain">
@@ -78,5 +78,9 @@
 .card__quantity {
   font-weight: 700;
   margin-inline-end: var(--wa-space-xs);
+}
+.card__details {
+  font-size: var(--wa-font-size-s);
+  color: var(--wa-color-neutral-60);
 }
 </style>

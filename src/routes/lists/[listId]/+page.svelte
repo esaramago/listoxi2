@@ -240,16 +240,16 @@
       </Grid>
 
       <!-- Open Items -->
-      <div>
-        {#if !$openItems}
-          <div class="loading-products">
-            A carregar produtos...
-          </div>
-        {:else if $openItems.length === 0}
-          <div class="empty-products">
-            Nenhum produto em falta.
-          </div>
-        {:else}
+      {#if !$openItems}
+        <div class="loading-products">
+          A carregar produtos...
+        </div>
+      {:else if $openItems.length === 0}
+        <div class="empty-products">
+          Nenhum produto em falta.
+        </div>
+      {:else}
+        <Grid direction="column" gap="xs">
           {#each $openItems as item (item.id)}
             <ProductCard
               productName={item.name}
@@ -262,8 +262,8 @@
               isBought={item.bought}
             />
           {/each}
-        {/if}
-      </div>
+        </Grid>
+      {/if}
 
       <!-- Collapsible Bought Items -->
       <div>
