@@ -9,7 +9,7 @@ services:
         - PUBLIC_POCKETBASE_URL=${PUBLIC_POCKETBASE_URL}
     container_name: listoxi-app
     ports:
-      - "8080:80"
+      - "8081:80"
     restart: unless-stopped
     depends_on:
       - pocketbase
