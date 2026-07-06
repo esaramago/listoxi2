@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - PUBLIC_POCKETBASE_URL=${PUBLIC_POCKETBASE_URL}
+    container_name: listoxi-app
+    ports:
+      - "80:80"
+    restart: unless-stopped
+    depends_on:
+      - pocketbase
+    networks:
+      - listoxi-network
+
+  pocketbase:
+    build:
+      context: .
+      dockerfile: pocketbase.dockerfile
+    container_name: listoxi-pb
+    ports:
+      - "8090:8090"
+    volumes:
+      - pb_data:/pb/pb_data
+    restart: unless-stopped
+    networks:
+      - listoxi-network
+
+volumes:
+  pb_data:
+
+networks:
+  listoxi-network:
+    driver: bridge

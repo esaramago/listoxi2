@@ -16,6 +16,8 @@ RUN pnpm install --frozen-lockfile
 COPY . .
 
 # Build static site
+ARG PUBLIC_POCKETBASE_URL
+ENV PUBLIC_POCKETBASE_URL=$PUBLIC_POCKETBASE_URL
 RUN pnpm build
 
 # Stage 2: Serve static files using Nginx
