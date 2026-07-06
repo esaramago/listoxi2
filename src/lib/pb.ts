@@ -32,17 +32,30 @@ export async function inviteUserByEmail(email: string): Promise<string> {
 			const password = generateRandomPassword()
 			const username = 'user_' + Math.random().toString(36).substring(2, 10)
 			
-			const newUser = await pb.collection('users').create({
-				email: email,
-				password: password,
-				passwordConfirm: password,
-				username: username,
-				emailVisibility: true
-			})
-			
-			await pb.collection('users').requestPasswordReset(email)
-			
-			return newUser.id;
+			try {
+				const newUser = await pb.collection('users').create({
+					email: email,
+					password: password,
+					passwordConfirm: password,
+					username: username,
+					emailVisibility: true
+				})
+				
+				await pb.collection('users').requestPasswordReset(email)
+				
+				return newUser.id;
+			} catch (createErr: any) {
+				console.error('Erro ao criar utilizador convidado:', createErr);
+				const isUniqueConstraint = createErr.status === 400 && 
+					(createErr.data?.email?.code === 'validation_invalid_email' || 
+					 JSON.stringify(createErr.data).toLowerCase().includes('unique') ||
+					 JSON.stringify(createErr.data).toLowerCase().includes('validation_invalid_email'));
+				
+				if (isUniqueConstraint) {
+					throw new Error(`O utilizador com o email "${email}" já tem conta mas o seu perfil está privado.`);
+				}
+				throw createErr;
+			}
 		}
 		throw err;
 	}

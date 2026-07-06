@@ -87,23 +87,20 @@
 						<wa-input
 							id="password"
 							type="password"
+							label="Palavra-passe"
 							placeholder="••••••••"
 							value={password}
 							oninput={(e: any) => password = e.target.value}
 							required
 							password-toggle
-						>
-							<div slot="label" class="password-label-wrapper">
-								<span>Palavra-passe</span>
-								<button 
-									type="button" 
-									onclick={() => isResetMode = true}
-									class="btn-link"
-								>
-									Esqueceste-te?
-								</button>
-							</div>
-						</wa-input>
+						></wa-input>
+            <button 
+              type="button" 
+              onclick={() => isResetMode = true}
+              class="btn-link"
+            >
+              Esqueceste-te da palavra-passe?
+            </button>
 
 						<wa-button 
 							type="submit" 

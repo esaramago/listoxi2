@@ -84,7 +84,12 @@
 						if (!sharedWithUserIds.includes(userId)) {
 							sharedWithUserIds.push(userId)
 						}
-					} catch (err) {
+					} catch (err: any) {
+						// Se for um erro do servidor permanente (como 400 ou 403) ou erro de perfil privado,
+						// mostramos o erro diretamente ao utilizador em vez de ignorar e guardar offline.
+						if (err.status === 400 || err.status === 403 || (err instanceof Error && !err.message.includes('fetch') && !err.message.includes('network'))) {
+							throw err
+						}
 						console.error(`Error resolving email ${email}, queuing offline:`, err)
 						pendingEmails.push(email)
 					}
@@ -132,7 +137,7 @@
 				<Grid direction="column" gap="xl">
 					<wa-input
 						id="list-name"
-						label="Nome da Lista *"
+						label="Nome da Lista"
 						type="text"
 						placeholder="Ex: Supermercado, Casa..."
 						value={listName}
