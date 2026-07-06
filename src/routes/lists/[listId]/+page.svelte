@@ -1,16 +1,16 @@
 <script lang="ts">
-	import { page } from '$app/stores';
-	import { goto } from '$app/navigation';
-	import { liveQuery } from 'dexie';
-	import { db } from '@/lib/db';
-	import { triggerSync } from '@/lib/sync';
-	import Icon from '@/lib/components/Icon.svelte';
-	import Grid from '@/components/ui/Grid.svelte';
+	import { page } from '$app/stores'
+	import { goto } from '$app/navigation'
+	import { liveQuery } from 'dexie'
+	import { db } from '@/lib/db'
+	import { triggerSync } from '@/lib/sync'
+	import Grid from '@/components/ui/Grid.svelte'
+	import Header from '@/components/Header.svelte'
 
-	const listId = $page.params.listId || '';
+	const listId = $page.params.listId || ''
 
 	// Reactive query for the list details
-	const list = liveQuery(() => db.lists.get(listId));
+	const list = liveQuery(() => db.lists.get(listId))
 
 	// Reactive query for open items
 	const openItems = liveQuery(() =>
@@ -97,48 +97,50 @@
 </script>
 
 <div class="container">
-	<!-- Top Navigation and Header -->
-	<header class="header">
-		<div class="header-title-container">
-			<a href="/" class="back-link">
-				&larr; Voltar
-			</a>
+	<Header backHref="/">
+		{#snippet titleSnippet()}
 			{#if !$list}
 				<h1 class="header-title">A carregar lista...</h1>
 			{:else}
 				<Grid tag="h1" align="center" gap="xs" class="header-title">
 					<span>
-						{#if $list.name.toLowerCase().includes('casa') || $list.name.toLowerCase().includes('padrões') || $list.name.toLowerCase().includes('louriceira')}
+						{#if $list.emoji}
+							{$list.emoji}
+						{:else if $list.name.toLowerCase().includes('casa') || $list.name.toLowerCase().includes('padrões') || $list.name.toLowerCase().includes('louriceira')}
 							🏡
+						{:else if $list.name.toLowerCase().includes('lidl') || $list.name.toLowerCase().includes('continente') || $list.name.toLowerCase().includes('compras')}
+							🛒
 						{:else}
 							🍏
 						{/if}
 					</span>
-					<span>Lista de compras de {$list.name}</span>
+					<span>{$list.name}</span>
 				</Grid>
-				<p class="header-subtitle">
-					<span>{$openItems ? $openItems.length : 0} produtos em falta</span>
-				</p>
 			{/if}
-		</div>
-
-		<!-- Action buttons for the list -->
-		<div class="action-buttons">
+		{/snippet}
+		{#snippet actions()}
 			{#if $list}
+				<wa-button variant="text" href="/lists/{listId}/edit" title="Editar Lista" class="btn-edit-list">
+					<wa-icon slot="prefix" name="pen"></wa-icon>
+					Editar
+				</wa-button>
 				<wa-button variant="text" onclick={deleteList} title="Apagar Lista" class="btn-delete-list">
-					<Icon slot="prefix" name="trash" />
+					<wa-icon slot="prefix" name="trash"></wa-icon>
 					Apagar
 				</wa-button>
 			{/if}
-		</div>
-	</header>
+		{/snippet}
+	</Header>
 
 	{#if $list}
 		<!-- Action line with "Adicionar" button -->
-		<Grid justify="end" class="action-line">
-			<wa-button variant="neutral" pill href="/lists/{listId}/create" class="btn-add-product">
-				<Icon slot="prefix" name="plus" />
-				Adicionar Produto
+		<Grid justify="space-between">
+			{#if $list}
+				<p>{$openItems ? $openItems.length : 0} produtos</p>
+			{/if}
+			<wa-button href="/lists/{listId}/create" appearance="plain" variant="brand">
+        <wa-icon name="plus"></wa-icon>
+				Adicionar produto
 			</wa-button>
 		</Grid>
 
@@ -154,25 +156,25 @@
 				</div>
 			{:else}
 				{#each $openItems as item (item.id)}
-					<div class="product-card">
-						<div class="product-card-left" onclick={() => goto(`/lists/${listId}/items/${item.id}`)} role="link" tabindex="0" onkeydown={(e) => e.key === 'Enter' && goto(`/lists/${listId}/items/${item.id}`)}>
-							<button class="check-btn" onclick={(e) => { e.stopPropagation(); toggleBought(item); }} title="Marcar como comprado">
-								<Icon name="circle" class="check-icon" />
-							</button>
-							<div class="item-text-container">
+					<wa-card class="card">
+            <button onclick={(e) => { e.stopPropagation(); toggleBought(item); }} title="Marcar como comprado">
+              <wa-icon name="circle" class="check-icon"></wa-icon>
+            </button>
+						<button class="card__link" onclick={() => goto(`/lists/${listId}/items/${item.id}`)} role="link" tabindex="0" onkeydown={(e) => e.key === 'Enter' && goto(`/lists/${listId}/items/${item.id}`)}>
+							<div>
+                {item.quantity}
 								<span class="product-name">{item.name}</span>
 								{#if item.details}
 									<span class="item-details">{item.details}</span>
 								{/if}
 							</div>
-						</div>
-						<div class="product-card-right">
-							<span class="product-qty">{item.quantity}x</span>
-							<button class="delete-btn" onclick={() => deleteItem(item)} title="Apagar produto">
-								<Icon name="trash" class="delete-icon" />
+						</button>
+						<div>
+							<button onclick={() => deleteItem(item)} title="Apagar produto">
+								<wa-icon name="trash" class="delete-icon"></wa-icon>
 							</button>
 						</div>
-					</div>
+					</wa-card>
 				{/each}
 			{/if}
 		</div>
@@ -180,8 +182,8 @@
 		<!-- Collapsible Bought Items -->
 		<div class="bought-section">
 			<div class="section-title" onclick={() => showBought = !showBought} role="button" tabindex="0" onkeydown={(e) => e.key === 'Enter' && (showBought = !showBought)}>
-				<Icon name={showBought ? 'chevron-up' : 'chevron-down'} class="chevron-icon" />
-				<span>Concluídos ({showBought && boughtItemsData ? boughtItemsData.length : 'clique para ver'})</span>
+				<wa-icon name={showBought ? 'chevron-up' : 'chevron-down'} class="chevron-icon"></wa-icon>
+				<span>Concluídos ({showBought && boughtItemsData ? `${boughtItemsData.length} itens` : ''})</span>
 			</div>
 
 			{#if showBought}
@@ -192,10 +194,10 @@
 						</div>
 					{:else}
 						{#each boughtItemsData as item (item.id)}
-							<div class="product-card bought">
+							<wa-card class="product-card bought">
 								<div class="product-card-left" onclick={() => goto(`/lists/${listId}/items/${item.id}`)} role="link" tabindex="0" onkeydown={(e) => e.key === 'Enter' && goto(`/lists/${listId}/items/${item.id}`)}>
 									<button class="check-btn check-btn-bought" onclick={(e) => { e.stopPropagation(); toggleBought(item); }} title="Marcar como pendente">
-										<Icon name="check-circle" class="check-icon" />
+										<wa-icon name="check-circle" class="check-icon"></wa-icon>
 									</button>
 									<div class="item-text-container">
 										<span class="product-name">{item.name}</span>
@@ -207,10 +209,10 @@
 								<div class="product-card-right">
 									<span class="product-qty">{item.quantity}x</span>
 									<button class="delete-btn" onclick={() => deleteItem(item)} title="Apagar produto">
-										<Icon name="trash" class="delete-icon" />
+										<wa-icon name="trash" class="delete-icon"></wa-icon>
 									</button>
 								</div>
-							</div>
+							</wa-card>
 						{/each}
 					{/if}
 				</div>
@@ -220,86 +222,14 @@
 </div>
 
 <style>
-	.header {
-		margin-bottom: var(--wa-space-l);
-	}
-	.back-link {
-		display: inline-flex;
-		align-items: center;
-		gap: var(--wa-space-3xs);
-		color: var(--wa-color-brand-50);
-		text-decoration: none;
-		font-size: var(--wa-font-size-s);
-		font-weight: 700;
-		margin-bottom: var(--wa-space-2xs);
-	}
-	.back-link:hover {
-		color: var(--wa-color-brand-40);
-	}
-	:global(.header-title.l-grid) {
-		display: inline-flex;
-		margin: 0;
-	}
-	.btn-delete-list {
-		color: var(--wa-color-danger-60);
-	}
-	.btn-delete-list:hover {
-		color: var(--wa-color-danger-50);
-	}
-	:global(.action-line) {
-		margin-bottom: var(--wa-space-m);
-	}
-	.btn-add-product {
-		--wa-button-padding: var(--wa-space-xs) var(--wa-space-m);
-	}
-	.loading-products {
-		text-align: center;
-		padding: var(--wa-space-m);
-		color: var(--wa-color-neutral-60);
-	}
-	.empty-products {
-		text-align: center;
-		padding: var(--wa-space-xl) var(--wa-space-m);
-		background: rgba(148, 163, 184, 0.02);
-		border: 1px dashed var(--wa-color-neutral-30);
-		border-radius: var(--wa-border-radius-m);
-		color: var(--wa-color-neutral-60);
-	}
-	.check-icon {
-		width: var(--wa-space-l);
-		height: var(--wa-space-l);
-	}
-	.item-text-container {
-		display: flex;
-		flex-direction: column;
-		gap: var(--wa-space-3xs);
-	}
-	.item-details {
-		font-size: var(--wa-font-size-xs);
-		color: var(--wa-color-neutral-60);
-	}
-	.delete-icon {
-		width: var(--wa-space-m);
-		height: var(--wa-space-m);
-	}
-	.bought-section {
-		margin-top: var(--wa-space-2xl);
-	}
-	.chevron-icon {
-		width: var(--wa-space-s);
-		height: var(--wa-space-s);
-		color: var(--wa-color-neutral-60);
-	}
-	.bought-list {
-		margin-top: var(--wa-space-xs);
-	}
-	.empty-bought-msg {
-		text-align: center;
-		padding: var(--wa-space-m);
-		color: var(--wa-color-neutral-60);
-		font-size: var(--wa-font-size-s);
-	}
-	.check-btn-bought {
-		color: var(--wa-color-success-50);
-	}
+ .card {
+   &::part(body) {
+     display: flex;
+     justify-content: space-between;
+     align-items: center;
+   }
+ }
+ .card__link {
+  flex-grow: 1;
+ }
 </style>

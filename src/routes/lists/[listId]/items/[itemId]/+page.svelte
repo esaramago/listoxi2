@@ -1,23 +1,23 @@
 <script lang="ts">
-	import { page } from '$app/stores';
-	import { goto } from '$app/navigation';
-	import { liveQuery } from 'dexie';
-	import { db } from '@/lib/db';
-	import { triggerSync } from '@/lib/sync';
-	import Icon from '@/lib/components/Icon.svelte';
-	import Grid from '@/components/ui/Grid.svelte';
+	import { page } from '$app/stores'
+	import { goto } from '$app/navigation'
+	import { liveQuery } from 'dexie'
+	import { db } from '@/lib/db'
+	import { triggerSync } from '@/lib/sync'
+	import Grid from '@/components/ui/Grid.svelte'
+	import Header from '@/components/Header.svelte'
 
-	const listId = $page.params.listId || '';
-	const itemId = $page.params.itemId || '';
+	const listId = $page.params.listId || ''
+	const itemId = $page.params.itemId || ''
 
-	let name = $state('');
-	let quantity = $state(1);
-	let details = $state('');
-	let bought = $state(false);
-	let loading = $state(false);
-	let errorMsg = $state('');
+	let name = $state('')
+	let quantity = $state(1)
+	let details = $state('')
+	let bought = $state(false)
+	let loading = $state(false)
+	let errorMsg = $state('')
 
-	const itemQuery = liveQuery(() => db.items.get(itemId));
+	const itemQuery = liveQuery(() => db.items.get(itemId))
 
 	$effect(() => {
 		const item = $itemQuery;
@@ -68,20 +68,16 @@
 </script>
 
 <div class="container">
-	<header class="header">
-		<div class="header-title-container">
-			<a href="/lists/{listId}" class="back-link">
-				&larr; Voltar
-			</a>
-			<h1 class="header-title">Editar Produto</h1>
-			<p class="header-subtitle">Modifique os dados do produto</p>
-		</div>
-	</header>
+	<Header
+		backHref="/lists/{listId}"
+		title="Editar Produto"
+		subtitle="Modifique os dados do produto"
+	/>
 
 	<Grid direction="column" gap="m">
 		{#if errorMsg}
 			<wa-callout variant="danger" class="error-callout">
-				<Icon slot="icon" name="circle" class="icon-danger" />
+				<wa-icon slot="icon" name="circle" class="icon-danger"></wa-icon>
 				{errorMsg}
 			</wa-callout>
 		{/if}
@@ -120,12 +116,12 @@
 						rows="3"
 					></wa-textarea>
 
-					<Grid gap="m" fullWidth class="button-grid">
-						<wa-button type="submit" variant="primary" loading={loading ? true : undefined}>
-							Guardar Alterações
-						</wa-button>
-						<wa-button variant="neutral" href="/lists/{listId}">
+					<Grid gap="m" justify="end">
+						<wa-button  href="/lists/{listId}">
 							Cancelar
+						</wa-button>
+						<wa-button type="submit" variant="brand" loading={loading ? true : undefined}>
+							Guardar Alterações
 						</wa-button>
 					</Grid>
 				</Grid>
@@ -135,22 +131,7 @@
 </div>
 
 <style>
-	.header {
-		margin-bottom: var(--wa-space-m);
-	}
-	.back-link {
-		display: inline-flex;
-		align-items: center;
-		gap: var(--wa-space-3xs);
-		color: var(--wa-color-brand-50);
-		text-decoration: none;
-		font-size: var(--wa-font-size-s);
-		font-weight: 700;
-		margin-bottom: var(--wa-space-2xs);
-	}
-	.back-link:hover {
-		color: var(--wa-color-brand-40);
-	}
+
 	.error-callout {
 		margin-bottom: var(--wa-space-m);
 	}
@@ -161,8 +142,5 @@
 		text-align: center;
 		padding: var(--wa-space-2xl);
 		color: var(--wa-color-neutral-60);
-	}
-	:global(.button-grid) {
-		margin-top: var(--wa-space-m);
 	}
 </style>

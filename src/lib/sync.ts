@@ -83,7 +83,8 @@ export async function triggerSync() {
 						id: list.id,
 						name: list.name,
 						owner: list.owner,
-						shared_with: list.shared_with
+						shared_with: list.shared_with,
+						emoji: list.emoji || ''
 					});
 					await db.lists.update(list.id, { sync_status: 'synced' });
 				} catch (err: any) {
@@ -98,7 +99,8 @@ export async function triggerSync() {
 				try {
 					await pb.collection('lists').update(list.id, {
 						name: list.name,
-						shared_with: list.shared_with
+						shared_with: list.shared_with,
+						emoji: list.emoji || ''
 					});
 					await db.lists.update(list.id, { sync_status: 'synced' });
 				} catch (err: any) {
@@ -195,7 +197,8 @@ export async function triggerSync() {
 					owner: rList.owner,
 					shared_with: rList.shared_with || [],
 					sync_status: 'synced',
-					updated: rList.updated
+					updated: rList.updated,
+					emoji: rList.emoji || ''
 				});
 			}
 		}
@@ -275,7 +278,8 @@ export function setupRealtimeSubscriptions() {
 							owner: list.owner,
 							shared_with: list.shared_with || [],
 							sync_status: 'synced',
-							updated: list.updated
+							updated: list.updated,
+							emoji: list.emoji || ''
 						});
 					}
 				} else {

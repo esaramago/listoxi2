@@ -12,27 +12,34 @@
     class: className = '',
     children
   }: {
-    tag?: keyof HTMLElementTagNameMap;
-    direction?: 'row' | 'column';
-    align?: 'start' | 'center' | 'end';
-    justify?: 'start' | 'center' | 'end' | 'space-between' | 'space-around' | 'space-evenly';
-    gap?: Spacing;
-    wrap?: boolean;
-    fullWidth?: boolean;
-    class?: string;
-    children?: any;
+    tag?: keyof HTMLElementTagNameMap
+    direction?: 'row' | 'column'
+    align?: 'start' | 'center' | 'end'
+    justify?: 'start' | 'center' | 'end' | 'space-between' | 'space-around' | 'space-evenly'
+    gap?: Spacing
+    wrap?: boolean
+    fullWidth?: boolean
+    class?: string
+    children?: any
   } = $props()
 
-  const gridStyle = $derived({
-    '--gap': gap ? `var(--wa-space-${gap})` : undefined,
-    '--align': align ?? undefined,
-    '--justify': justify ?? undefined,
-    '--wrap': wrap === true ? 'wrap' : wrap === false ? 'nowrap' : undefined,
-    '--direction': direction ?? undefined
-  })
+  const alignMap = { start: 'flex-start', center: 'center', end: 'flex-end' } as const
+
+  const gapStyle = $derived(gap ? `var(--wa-space-${gap})` : undefined)
+  const wrapStyle = $derived(wrap === true ? 'wrap' : wrap === false ? 'nowrap' : undefined)
+
 </script>
 
-<svelte:element this={tag} class="l-grid {className}" class:l-grid--full-width={fullWidth} style={gridStyle}>
+<svelte:element
+  this={tag}
+  class="l-grid {className}"
+  class:l-grid--full-width={fullWidth}
+  style:--gap={gapStyle}
+  style:--align={align ? alignMap[align] || align : undefined}
+  style:--justify={justify}
+  style:--wrap={wrapStyle}
+  style:--direction={direction}
+>
   {@render children()}
 </svelte:element>
 

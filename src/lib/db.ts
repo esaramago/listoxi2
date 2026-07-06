@@ -8,6 +8,7 @@ export interface LocalList {
 	shared_emails?: string[]; // Emails queued to be shared when sync runs online
 	sync_status: 'synced' | 'created' | 'updated' | 'deleted';
 	updated: string; // ISO string
+	emoji?: string;
 }
 
 export interface LocalItem {

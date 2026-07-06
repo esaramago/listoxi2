@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { pb } from '@/lib/pb'
-	import Icon from '@/lib/components/Icon.svelte'
 	import Grid from '@/components/ui/Grid.svelte'
 
 	let email = $state('')
@@ -60,14 +59,14 @@
 		<Grid direction="column" gap="m">
 			{#if errorMsg}
 				<wa-callout variant="danger">
-					<Icon slot="icon" name="circle" class="icon-danger" />
+					<wa-icon name="circle" class="icon-danger"></wa-icon>
 					{errorMsg}
 				</wa-callout>
 			{/if}
 
 			{#if successMsg}
 				<wa-callout variant="success">
-					<Icon slot="icon" name="cloud-check" class="icon-success" />
+					<wa-icon name="cloud-check" class="icon-success"></wa-icon>
 					{successMsg}
 				</wa-callout>
 			{/if}
@@ -108,7 +107,7 @@
 
 						<wa-button 
 							type="submit" 
-							variant="primary" 
+							variant="brand" 
 							class="btn-submit"
 							loading={loading ? true : undefined}
 						>
@@ -131,7 +130,7 @@
 
 						<wa-button 
 							type="submit" 
-							variant="primary" 
+							variant="brand" 
 							class="btn-submit"
 							loading={loading ? true : undefined}
 						>
