@@ -37,7 +37,8 @@
 				details: details.trim(),
 				bought: false,
 				sync_status: 'created',
-				updated: new Date().toISOString()
+				updated: new Date().toISOString(),
+				created: new Date().toISOString()
 			})
 
 			triggerSync()

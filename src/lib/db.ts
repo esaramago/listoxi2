@@ -20,6 +20,7 @@ export interface LocalItem {
 	bought: boolean;
 	sync_status: 'synced' | 'created' | 'updated' | 'deleted';
 	updated: string; // ISO string
+	created?: string; // ISO string
 }
 
 class ListoxiDatabase extends Dexie {

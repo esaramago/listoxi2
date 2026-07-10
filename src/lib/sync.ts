@@ -237,7 +237,8 @@ export async function triggerSync() {
 						details: rItem.details || '',
 						bought: rItem.bought,
 						sync_status: 'synced',
-						updated: rItem.updated
+						updated: rItem.updated,
+						created: rItem.created
 					});
 				}
 			}
@@ -316,7 +317,8 @@ export function setupRealtimeSubscriptions() {
 						details: item.details || '',
 						bought: item.bought,
 						sync_status: 'synced',
-						updated: item.updated
+						updated: item.updated,
+						created: item.created
 					});
 				}
 			} else if (e.action === 'delete') {

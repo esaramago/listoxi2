@@ -49,12 +49,6 @@
 
 <div class="container">
 	<Header title="Listoxi">
-		{#snippet subtitleSnippet()}
-			<p class="header-subtitle">
-				<SyncBadge />
-			</p>
-		{/snippet}
-
 		{#snippet actions()}
 			<wa-button circle variant="text" onclick={toggleTheme} title="Alternar Tema">
 				<wa-icon name={isDark ? 'sun' : 'moon'} />
@@ -84,14 +78,7 @@
 		{:else}
       <Grid direction="column">
         <Grid justify="space-between" align="center">
-          <span>
-            {$listsWithCounts.length} 
-            {#if $listsWithCounts.length > 1}
-              listas
-            {:else}
-              lista
-            {/if}
-          </span>
+				  <SyncBadge />
           <wa-button href="/lists/create" variant="brand" appearance="plain">
             <wa-icon name="plus"></wa-icon>
             Adicionar lista

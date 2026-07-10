@@ -31,6 +31,8 @@
 		display: inline-flex;
 		align-items: center;
 		gap: 6px;
+    color: var(--wa-color-neutral-60);
+    font-size: var(--wa-font-size-s);
 	}
 
 	.sync-badge {

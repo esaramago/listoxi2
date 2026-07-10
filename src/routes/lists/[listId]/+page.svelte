@@ -23,7 +23,7 @@
 
 			if (resolvedIds.length > 0) {
 				Promise.all(
-					resolvedIds.map(async (id) => {
+					resolvedIds.map(async (id: string) => {
 						try {
 							const userRecord = await pb.collection('users').getOne(id)
 							return userRecord.email || userRecord.username || id
@@ -69,6 +69,13 @@
 			.equals(listId)
 			.and((item) => !item.bought && item.sync_status !== 'deleted')
 			.toArray()
+			.then((items) =>
+				items.sort((a, b) => {
+					const aTime = new Date(a.created || a.updated || 0).getTime()
+					const bTime = new Date(b.created || b.updated || 0).getTime()
+					return aTime - bTime
+				})
+			)
 	);
 
 	// Collapsible bought items state
@@ -84,6 +91,13 @@
 					.equals(listId)
 					.and((item) => item.bought && item.sync_status !== 'deleted')
 					.toArray()
+					.then((items) =>
+						items.sort((a, b) => {
+							const aTime = new Date(a.created || a.updated || 0).getTime()
+							const bTime = new Date(b.created || b.updated || 0).getTime()
+							return aTime - bTime
+						})
+					)
 			).subscribe((data) => {
 				boughtItemsData = data
 			})
@@ -179,7 +193,6 @@
 		{#snippet subtitleSnippet()}
 			{#if $list}
 				<div class="subtitle-container">
-					<SyncBadge />
 					{#if ($list.shared_with && $list.shared_with.length > 0) || ($list.shared_emails && $list.shared_emails.length > 0)}
 						<div class="share-badge-container">
 							<button 
@@ -231,7 +244,10 @@
       <!-- Action line with "Adicionar" button -->
       <Grid justify="space-between" align="center">
         {#if $list}
-          <p>{$openItems ? $openItems.length : 0} produtos</p>
+          <div>
+            <SyncBadge />
+            <p>{$openItems ? $openItems.length : 0} produtos</p>
+          </div>
         {/if}
         <wa-button href="/lists/{listId}/create" appearance="plain" variant="brand">
           <wa-icon name="plus"></wa-icon>
