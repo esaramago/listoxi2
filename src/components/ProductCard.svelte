@@ -1,23 +1,23 @@
 <script lang="ts">
-	let {
-		productName,
-		productQuantity,
-		productDetails,
-    isBought,
-		listId,
-		productId,
-		deleteItem,
-		toggleBought,
-	}: {
-		productName: string
-		productQuantity: number
-		productDetails?: string
-		productId: string
-    isBought: boolean
-		listId: string
-		deleteItem: (productId: string) => void
-		toggleBought: (productId: string) => void
-	} = $props()
+let {
+  productName,
+  productQuantity,
+  productDetails,
+  isBought,
+  listId,
+  productId,
+  deleteItem,
+  toggleBought,
+}: {
+  productName: string
+  productQuantity: number
+  productDetails?: string
+  productId: string
+  isBought: boolean
+  listId: string
+  deleteItem: (productId: string) => void
+  toggleBought: (productId: string) => void
+} = $props()
 </script>
 
 <wa-card class="card">

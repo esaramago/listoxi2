@@ -11,9 +11,9 @@
   --wa-border-radius-scale: 3;
   --wa-shadow-scale: 1.6;
   --wa-space-scale: 1.6;
-  
+
   --wa-font-family-body: var(--font-family-body);
-  
+
   --wa-color-brand-90: #e6f7f0; /* #lighter */
   --wa-color-brand-80: #bcf0d8;
   --wa-color-brand-70: #9cdca3;
@@ -24,7 +24,7 @@
   --wa-color-brand-20: #074f38;
   --wa-color-brand-10: #053323; /* #darker */
   --wa-color-danger-fill-normal: var(--wa-color-danger-60);
-  
+
   --wa-color-surface-border: var(--wa-color-neutral-80);
   --wa-color-surface-default: var(--wa-color-neutral-90);
 

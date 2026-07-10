@@ -27,47 +27,42 @@
 </span>
 
 <style>
-	.sync-status {
-		display: inline-flex;
-		align-items: center;
-		gap: 6px;
-    color: var(--wa-color-neutral-60);
-    font-size: var(--wa-font-size-s);
-	}
+.sync-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--wa-color-neutral-60);
+  font-size: var(--wa-font-size-s);
+}
+.sync-badge {
+  border-radius: 50%;
+  justify-content: center;
+  align-items: center;
+  width: 24px;
+  height: 24px;
+  transition: color 0.3s;
+  display: inline-flex;
+}
+.sync-badge.synced {
+  color: #10b981;
+}
+.sync-badge.syncing {
+  color: #3b82f6;
+  animation: 2s linear infinite spin;
+}
+.sync-badge.pending {
+  color: #f59e0b;
+}
+.sync-badge.offline {
+  color: #ef4444;
+}
 
-	.sync-badge {
-		border-radius: 50%;
-		justify-content: center;
-		align-items: center;
-		width: 24px;
-		height: 24px;
-		transition: color 0.3s;
-		display: inline-flex;
-	}
-
-	.sync-badge.synced {
-		color: #10b981;
-	}
-
-	.sync-badge.syncing {
-		color: #3b82f6;
-		animation: 2s linear infinite spin;
-	}
-
-	.sync-badge.pending {
-		color: #f59e0b;
-	}
-
-	.sync-badge.offline {
-		color: #ef4444;
-	}
-
-	@keyframes spin {
-		0% {
-			transform: rotate(0deg);
-		}
-		100% {
-			transform: rotate(360deg);
-		}
-	}
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
 </style>

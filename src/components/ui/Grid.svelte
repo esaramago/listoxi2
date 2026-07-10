@@ -1,32 +1,32 @@
 <script lang="ts">
-  import type { Spacing } from '@/types/grid'
+import type { Spacing } from '@/types/grid'
 
-  let {
-    tag = 'div',
-    direction,
-    align,
-    justify,
-    gap,
-    wrap,
-    fullWidth = false,
-    class: className = '',
-    children
-  }: {
-    tag?: keyof HTMLElementTagNameMap
-    direction?: 'row' | 'column'
-    align?: 'start' | 'center' | 'end'
-    justify?: 'start' | 'center' | 'end' | 'space-between' | 'space-around' | 'space-evenly'
-    gap?: Spacing
-    wrap?: boolean
-    fullWidth?: boolean
-    class?: string
-    children?: any
-  } = $props()
+let {
+  tag = 'div',
+  direction,
+  align,
+  justify,
+  gap,
+  wrap,
+  fullWidth = false,
+  class: className = '',
+  children
+}: {
+  tag?: keyof HTMLElementTagNameMap
+  direction?: 'row' | 'column'
+  align?: 'start' | 'center' | 'end'
+  justify?: 'start' | 'center' | 'end' | 'space-between' | 'space-around' | 'space-evenly'
+  gap?: Spacing
+  wrap?: boolean
+  fullWidth?: boolean
+  class?: string
+  children?: any
+} = $props()
 
-  const alignMap = { start: 'flex-start', center: 'center', end: 'flex-end' } as const
+const alignMap = { start: 'flex-start', center: 'center', end: 'flex-end' } as const
 
-  const gapStyle = $derived(gap ? `var(--wa-space-${gap})` : undefined)
-  const wrapStyle = $derived(wrap === true ? 'wrap' : wrap === false ? 'nowrap' : undefined)
+const gapStyle = $derived(gap ? `var(--wa-space-${gap})` : undefined)
+const wrapStyle = $derived(wrap === true ? 'wrap' : wrap === false ? 'nowrap' : undefined)
 
 </script>
 

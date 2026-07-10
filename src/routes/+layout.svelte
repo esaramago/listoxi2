@@ -6,10 +6,10 @@
 	import { currentUser } from '@/lib/pb'
 	import Grid from '@/components/ui/Grid.svelte'
 
-	let { children } = $props();
+	let { children } = $props()
 
-	let isDarkMode = $state(false);
-	let componentsLoaded = $state(false);
+	let isDarkMode = $state(false)
+	let componentsLoaded = $state(false)
 
 	// Safe routing check
 	onMount(async () => {
@@ -24,35 +24,35 @@
 				import('@awesome.me/webawesome/dist/components/dropdown/dropdown.js'),
 				import('@awesome.me/webawesome/dist/components/dropdown-item/dropdown-item.js')
 			]);
-			componentsLoaded = true;
+			componentsLoaded = true
 		} catch (err) {
-			console.error('Failed to load Web Awesome elements:', err);
+			console.error('Failed to load Web Awesome elements:', err)
 		}
 
 		// Theme initialization
-		const savedTheme = localStorage.getItem('theme');
-		const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+		const savedTheme = localStorage.getItem('theme')
+		const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
 		
 		if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
 			isDarkMode = true;
-			document.documentElement.classList.add('wa-dark');
+			document.documentElement.classList.add('wa-dark')
 		} else {
 			isDarkMode = false;
-			document.documentElement.classList.remove('wa-dark');
+			document.documentElement.classList.remove('wa-dark')
 		}
 	})
 
 	// Svelte 5 reactive effect for routing auth check
 	$effect(() => {
-		const user = $currentUser;
-		const path = $page.url.pathname;
+		const user = $currentUser
+		const path = $page.url.pathname
 
 		if (!user && path !== '/login') {
-			goto('/login');
+			goto('/login')
 		} else if (user && path === '/login') {
-			goto('/');
+			goto('/')
 		}
-	});
+	})
 </script>
 
 <svelte:head>

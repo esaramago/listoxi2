@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { liveQuery } from 'dexie';
-	import { db } from '@/lib/db';
-	import { pb } from '@/lib/pb';
-	import Header from '@/components/Header.svelte';
-	import EmptyState from '@/components/EmptyState.svelte';
-	import SyncBadge from '@/components/SyncBadge.svelte';
+	import { liveQuery } from 'dexie'
+	import { db } from '@/lib/db'
+	import { pb } from '@/lib/pb'
+	import Header from '@/components/Header.svelte'
+	import EmptyState from '@/components/EmptyState.svelte'
+	import SyncBadge from '@/components/SyncBadge.svelte'
 	import Grid from '@/components/ui/Grid.svelte'
 
 	// Reactive query for lists with their corresponding item counts
@@ -113,38 +113,38 @@
 </div>
 
 <style>
-	.loading-state {
-		text-align: center;
-		padding: var(--wa-space-2xl);
-		color: var(--wa-color-neutral-60);
-	}
-  .card {
-    display: flex;
+.loading-state {
+  text-align: center;
+  padding: var(--wa-space-2xl);
+  color: var(--wa-color-neutral-60);
+}
+.card {
+  display: flex;
+  width: 100%;
+  text-decoration: none;
+  justify-content: space-between;
+  font-weight: 700;
+  font-size: var(--wa-font-size-xl);
+  wa-card {
     width: 100%;
-    text-decoration: none;
-    justify-content: space-between;
-    font-weight: 700;
-    font-size: var(--wa-font-size-xl);
-    wa-card {
-      width: 100%;
-      &::part(body) {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
+    &::part(body) {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
   }
-  .card__count {
-    display: flex;
-    flex-direction: column;
-    text-align: center;
-  }
-  .card__number {
-    font-size: var(--wa-font-size-3xl);
-    font-weight: 900;
-  }
-  .card__label {
-    font-size: var(--wa-font-size-s);
-    font-weight: 400;
-  }
+}
+.card__count {
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+}
+.card__number {
+  font-size: var(--wa-font-size-3xl);
+  font-weight: 900;
+}
+.card__label {
+  font-size: var(--wa-font-size-s);
+  font-weight: 400;
+}
 </style>

@@ -10,11 +10,11 @@
 	const emojis = [
 		'🍏', '🛒', '🏡', '🍕', '💊', '🎒', '📚', '🛠️',
 		'🐶', '👕', '🎁', '⚡', '🎉', '🚗', '💼', '❤️'
-	];
+	]
 
 	function selectEmoji(em: string) {
 		if (value === em) {
-			value = ''; // Remove selection
+			value = '' // Remove selection
 		} else {
 			value = em;
 		}
