@@ -47,9 +47,12 @@
 	</div>
 
 	{#if actions}
-		<div class="action-buttons">
+		<wa-dropdown placement="bottom-end">
+			<wa-button slot="trigger" circle appearance="plain" title="Opções" variant="brand">
+				<wa-icon name="ellipsis-vertical"></wa-icon>
+			</wa-button>
 			{@render actions()}
-		</div>
+		</wa-dropdown>
 	{/if}
 </header>
 
@@ -83,11 +86,7 @@
 		letter-spacing: -0.5px;
 	}
 
-	.action-buttons {
-		display: flex;
-		gap: 10px;
-		align-items: center;
-	}
+
 
 	.back-title-link {
 		display: inline-flex;

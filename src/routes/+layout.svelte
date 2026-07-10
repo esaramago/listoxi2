@@ -20,7 +20,9 @@
 				import('@awesome.me/webawesome/dist/components/input/input.js'),
 				import('@awesome.me/webawesome/dist/components/textarea/textarea.js'),
 				import('@awesome.me/webawesome/dist/components/card/card.js'),
-				import('@awesome.me/webawesome/dist/components/callout/callout.js')
+				import('@awesome.me/webawesome/dist/components/callout/callout.js'),
+				import('@awesome.me/webawesome/dist/components/dropdown/dropdown.js'),
+				import('@awesome.me/webawesome/dist/components/dropdown-item/dropdown-item.js')
 			]);
 			componentsLoaded = true;
 		} catch (err) {

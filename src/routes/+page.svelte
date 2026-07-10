@@ -50,12 +50,14 @@
 <div class="container">
 	<Header title="Listoxi">
 		{#snippet actions()}
-			<wa-button circle variant="text" onclick={toggleTheme} title="Alternar Tema">
-				<wa-icon name={isDark ? 'sun' : 'moon'} />
-			</wa-button>
-			<wa-button circle variant="text" onclick={logout} title="Sair da Conta">
-				<wa-icon name="arrow-right-from-bracket" />
-			</wa-button>
+			<wa-dropdown-item onclick={toggleTheme}>
+				<wa-icon slot="icon" name={isDark ? 'sun' : 'moon'}></wa-icon>
+				Alternar Tema
+			</wa-dropdown-item>
+			<wa-dropdown-item onclick={logout}>
+				<wa-icon slot="icon" name="arrow-right-from-bracket"></wa-icon>
+				Sair da Conta
+			</wa-dropdown-item>
 		{/snippet}
 	</Header>
 

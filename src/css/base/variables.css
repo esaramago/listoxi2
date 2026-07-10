@@ -12,7 +12,8 @@
   --wa-shadow-scale: 1.6;
   --wa-space-scale: 1.6;
   
-  --wa-color-surface-default: var(--wa-color-neutral-80);
+  --wa-color-surface-border: var(--wa-color-neutral-80);
+  --wa-color-surface-default: var(--wa-color-neutral-90);
   
   --wa-font-family-body: var(--font-family-body);
   
@@ -32,6 +33,7 @@
 
 .wa-dark {
   .wa-custom-theme {
+    --wa-color-surface-border: var(--wa-color-neutral-20);
     --wa-color-surface-default: var(--wa-color-neutral-10);
   }
 }

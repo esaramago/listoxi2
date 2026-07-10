@@ -226,14 +226,14 @@
 		{/snippet}
 		{#snippet actions()}
 			{#if $list}
-				<wa-button variant="text" href="/lists/{listId}/edit" title="Editar Lista" class="btn-edit-list">
-					<wa-icon slot="prefix" name="pen"></wa-icon>
-					Editar
-				</wa-button>
-				<wa-button variant="text" onclick={deleteList} title="Apagar Lista" class="btn-delete-list">
-					<wa-icon slot="prefix" name="trash"></wa-icon>
-					Apagar
-				</wa-button>
+				<wa-dropdown-item href="/lists/{listId}/edit">
+					<wa-icon slot="icon" name="pen"></wa-icon>
+					Editar Lista
+				</wa-dropdown-item>
+				<wa-dropdown-item onclick={deleteList} variant="danger">
+					<wa-icon slot="icon" name="trash"></wa-icon>
+					Apagar Lista
+				</wa-dropdown-item>
 			{/if}
 		{/snippet}
 	</Header>
@@ -428,4 +428,5 @@
 		border-color: var(--wa-color-neutral-20);
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 	}
+
 </style>
