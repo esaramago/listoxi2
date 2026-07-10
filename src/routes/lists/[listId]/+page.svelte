@@ -226,7 +226,7 @@
 		{/snippet}
 		{#snippet actions()}
 			{#if $list}
-				<wa-dropdown-item href="/lists/{listId}/edit">
+				<wa-dropdown-item onclick={() => goto(`/lists/${listId}/edit`)}>
 					<wa-icon slot="icon" name="pen"></wa-icon>
 					Editar Lista
 				</wa-dropdown-item>
