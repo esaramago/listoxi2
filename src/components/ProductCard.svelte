@@ -41,6 +41,7 @@
 .check-btn {
   width: var(--wa-space-xl);
   height: var(--wa-space-xl);
+  flex: 0 0 var(--wa-space-xl);
   border-radius: 50%;
   border: 4px solid var(--wa-color-brand-60);
   background-color: var(--wa-color-neutral-80);

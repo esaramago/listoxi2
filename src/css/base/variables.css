@@ -11,7 +11,8 @@
   --wa-border-radius-scale: 3;
   --wa-shadow-scale: 1.6;
   --wa-space-scale: 1.6;
-  --wa-color-surface-default: var(--wa-color-neutral-20);
+  
+  --wa-color-surface-default: var(--wa-color-neutral-80);
   
   --wa-font-family-body: var(--font-family-body);
   
@@ -27,4 +28,10 @@
   --wa-color-danger-fill-normal: var(--wa-color-danger-60);
 
   --wa-form-control-border-radius: var(--wa-border-radius-l);
+}
+
+.wa-dark {
+  .wa-custom-theme {
+    --wa-color-surface-default: var(--wa-color-neutral-10);
+  }
 }
