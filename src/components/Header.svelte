@@ -24,7 +24,7 @@ let {
 	<div class="header-title-container">
 		{#if backHref}
 			<a href={backHref} class="back-title-link">
-				<span class="back-arrow">&larr;</span>
+				<wa-icon name="arrow-left" class="back-arrow"></wa-icon>
 				{#if titleSnippet}
 					{@render titleSnippet()}
 				{:else if title}
@@ -98,15 +98,9 @@ let {
 }
 
 .back-arrow {
-  display: inline-flex;
-  align-items: center;
-  color: var(--wa-color-brand-50);
-  font-size: 26px;
-  font-weight: 800;
-  transition: transform 0.2s ease, color 0.2s ease;
+  color: var(--wa-color-brand-40);
 }
 .back-title-link:hover .back-arrow {
   transform: translateX(-4px);
-  color: var(--wa-color-brand-40);
 }
 </style>

@@ -7,11 +7,6 @@
 
 /* Web Awesome variables */
 .wa-custom-theme {
-  --wa-font-size-scale: 1.6;
-  --wa-border-radius-scale: 3;
-  --wa-shadow-scale: 1.6;
-  --wa-space-scale: 1.6;
-
   --wa-font-family-body: var(--font-family-body);
 
   --wa-color-brand-90: #e6f7f0; /* #lighter */
@@ -29,10 +24,8 @@
   --wa-color-surface-default: var(--wa-color-neutral-90);
 
   --wa-form-control-border-radius: var(--wa-border-radius-l);
-}
 
-.wa-dark {
-  > .wa-custom-theme {
+  &.wa-dark {
     --wa-color-surface-border: var(--wa-color-neutral-20);
     --wa-color-surface-default: var(--wa-color-neutral-10);
   }
