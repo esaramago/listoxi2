@@ -45,7 +45,7 @@
   height: var(--wa-space-xl);
   flex: 0 0 var(--wa-space-xl);
   border-radius: 50%;
-  border: 4px solid var(--wa-color-brand-60);
+  border: 3px solid var(--wa-color-brand-40);
   background-color: var(--wa-color-neutral-80);
   display: flex;
   margin-block: auto;
