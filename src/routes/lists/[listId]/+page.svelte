@@ -229,7 +229,7 @@
 
     <Grid direction="column" gap="l">
       <!-- Action line with "Adicionar" button -->
-      <Grid justify="space-between">
+      <Grid justify="space-between" align="center">
         {#if $list}
           <p>{$openItems ? $openItems.length : 0} produtos</p>
         {/if}

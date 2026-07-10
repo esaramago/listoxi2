@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Grid from '@/components/ui/Grid.svelte'
+	import Grid from './ui/Grid.svelte'
 	import type { Snippet } from 'svelte'
 
 	let {

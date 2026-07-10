@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Snippet } from 'svelte';
+	import type { Snippet } from 'svelte'
 
 	let {
 		backHref,
@@ -10,14 +10,14 @@
 		actions,
 		class: className = ''
 	}: {
-		backHref?: string;
-		title?: string;
-		subtitle?: string;
-		titleSnippet?: Snippet;
-		subtitleSnippet?: Snippet;
-		actions?: Snippet;
-		class?: string;
-	} = $props();
+		backHref?: string
+		title?: string
+		subtitle?: string
+		titleSnippet?: Snippet
+		subtitleSnippet?: Snippet
+		actions?: Snippet
+		class?: string
+	} = $props()
 </script>
 
 <header class="header {className}">

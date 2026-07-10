@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { syncState } from '@/lib/sync';
+	import { syncState } from '@/lib/sync'
 </script>
 
 <span class="sync-status">
