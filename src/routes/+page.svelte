@@ -15,7 +15,7 @@
 			const count = await db.items
 				.where('list')
 				.equals(list.id)
-				.and((item) => item.sync_status !== 'deleted')
+				.and((item) => !item.bought && item.sync_status !== 'deleted')
 				.count()
 			result.push({ ...list, count })
 		}
