@@ -73,7 +73,7 @@
 				items.sort((a, b) => {
 					const aTime = new Date(a.created || a.updated || 0).getTime()
 					const bTime = new Date(b.created || b.updated || 0).getTime()
-					return aTime - bTime
+					return bTime - aTime
 				})
 			)
 	);
@@ -95,7 +95,7 @@
 						items.sort((a, b) => {
 							const aTime = new Date(a.created || a.updated || 0).getTime()
 							const bTime = new Date(b.created || b.updated || 0).getTime()
-							return aTime - bTime
+							return bTime - aTime
 						})
 					)
 			).subscribe((data) => {
@@ -299,7 +299,7 @@
                   productQuantity={item.quantity}
                   productDetails={item.details}
                   productId={item.id}
-                  isBought={item.bought}
+                  isBought=true
                   {listId}
                   toggleBought={() => toggleBought(item.id)}
                   deleteItem={() => deleteItem(item.id)}

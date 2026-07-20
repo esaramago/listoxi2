@@ -48,16 +48,37 @@ let {
   border: 3px solid var(--wa-color-brand-40);
   background-color: var(--wa-color-neutral-80);
   display: flex;
+  padding: 3px;
   margin-block: auto;
   align-items: center;
   justify-content: center;
   transition: background-color 0.2s;
   cursor: pointer;
   &:hover {
-    background-color: var(--wa-color-brand-50);
+    &::before {
+      background-color: var(--wa-color-brand-50);
+    }
   }
   &:active {
-    background-color: var(--wa-color-brand-50);
+    &::before {
+      background-color: var(--wa-color-brand-40);
+    }
+  }
+  &::before {
+    content: '';
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background-color: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+  }
+}
+.check-btn--bought {
+  &::before {
+    background-color: var(--wa-color-brand-40);
   }
 }
 .card {
