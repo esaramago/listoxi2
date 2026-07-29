@@ -22,7 +22,9 @@
 				import('@awesome.me/webawesome/dist/components/card/card.js'),
 				import('@awesome.me/webawesome/dist/components/callout/callout.js'),
 				import('@awesome.me/webawesome/dist/components/dropdown/dropdown.js'),
-				import('@awesome.me/webawesome/dist/components/dropdown-item/dropdown-item.js')
+				import('@awesome.me/webawesome/dist/components/dropdown-item/dropdown-item.js'),
+				import('@awesome.me/webawesome/dist/components/select/select.js'),
+				import('@awesome.me/webawesome/dist/components/option/option.js')
 			]);
 			componentsLoaded = true
 		} catch (err) {

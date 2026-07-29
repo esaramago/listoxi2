@@ -8,18 +8,12 @@
 	import Grid from '@/components/ui/Grid.svelte'
 	import Header from '@/components/Header.svelte'
 	import EmojiPicker from '@/components/EmojiPicker.svelte'
+	import ListSharing, { type SharedMember } from '@/components/ListSharing.svelte'
 
 	const listId = $page.params.listId || ''
 
-	interface SharedMember {
-		id?: string
-		email: string
-		isPending: boolean
-	}
-
 	let listName = $state('')
 	let selectedEmoji = $state('')
-	let emailInput = $state('')
 	let sharedMembers = $state<SharedMember[]>([])
 	let loading = $state(false)
 	let errorMsg = $state('')
@@ -33,7 +27,7 @@
 			listName = $listData.name
 			selectedEmoji = $listData.emoji || ''
 			
-			const pending = ($listData.shared_emails || []).map(email => ({
+			const pending = ($listData.shared_emails || []).map((email: string) => ({
 				email,
 				isPending: true
 			}))
@@ -42,7 +36,7 @@
 			const resolvedIds = $listData.shared_with || []
 			if (resolvedIds.length > 0) {
 				Promise.all(
-					resolvedIds.map(async (id) => {
+					resolvedIds.map(async (id: string) => {
 						try {
 							const userRecord = await pb.collection('users').getOne(id)
 							return {
@@ -59,8 +53,8 @@
 						}
 					})
 				).then((resolvedMembers) => {
-					const resolvedEmails = resolvedMembers.map(m => m.email)
-					const uniquePending = pending.filter(p => !resolvedEmails.includes(p.email))
+					const resolvedEmails = resolvedMembers.map((m: any) => m.email)
+					const uniquePending = pending.filter((p: any) => !resolvedEmails.includes(p.email))
 					sharedMembers = [...uniquePending, ...resolvedMembers]
 				})
 			}
@@ -68,33 +62,6 @@
 			listLoaded = true
 		}
 	})
-
-	function addEmail(e: Event) {
-		e.preventDefault()
-		const email = emailInput.trim().toLowerCase()
-		if (!email) return
-
-		if (!email.includes('@')) {
-			errorMsg = 'Introduza um email válido.'
-			return
-		}
-
-		if (sharedMembers.some(m => m.email === email)) {
-			errorMsg = 'Este email já foi adicionado.'
-			return
-		}
-
-		sharedMembers.push({
-			email,
-			isPending: true
-		})
-		emailInput = ''
-		errorMsg = ''
-	}
-
-	function removeMember(member: SharedMember) {
-		sharedMembers = sharedMembers.filter(m => m.email !== member.email)
-	}
 
 	async function handleUpdate(e: SubmitEvent) {
 		e.preventDefault()
@@ -195,46 +162,7 @@
 
 					<EmojiPicker label="Ícone da Lista" bind:value={selectedEmoji} />
 
-					<Grid direction="column" gap="s">
-						<Grid align="end" gap="s">
-							<wa-input
-								id="share-email"
-								label="Partilhar com (Email)"
-								help-text="Os utilizadores serão convidados se ainda não estiverem registados."
-								type="email"
-								placeholder="amigo@email.com"
-								value={emailInput}
-								oninput={(e: any) => emailInput = e.target.value}
-								onkeydown={(e: any) => e.key === 'Enter' && (e.preventDefault(), addEmail(e))}
-								class="input-grow"
-							></wa-input>
-							<wa-button onclick={addEmail} class="btn-add-email">
-								<wa-icon slot="prefix" name="plus"></wa-icon>
-								Adicionar
-							</wa-button>
-						</Grid>
-
-						{#if sharedMembers.length > 0}
-							<div class="shared-emails-container">
-								<span class="shared-title">Membros Partilhados / Convidados</span>
-								<ul class="shared-list">
-									{#each sharedMembers as member}
-										<li class="shared-item">
-											<span class="shared-user">
-												👤 {member.email}
-												{#if member.isPending}
-													<span class="pending-badge">Pendente</span>
-												{/if}
-											</span>
-											<button type="button" onclick={() => removeMember(member)} class="btn-remove-email" title="Remover partilha">
-												&times;
-											</button>
-										</li>
-									{/each}
-								</ul>
-							</div>
-						{/if}
-					</Grid>
+					<ListSharing bind:sharedMembers />
 
 					<Grid gap="m" justify="end">
 						<wa-button href="/lists/{listId}">
@@ -257,68 +185,9 @@
 	.icon-danger {
 		color: var(--wa-color-danger-50);
 	}
-	:global(.input-grow) {
-		flex-grow: 1;
-	}
 	.loading-state {
 		text-align: center;
 		padding: var(--wa-space-2xl);
 		color: var(--wa-color-neutral-60);
-	}
-	.shared-emails-container {
-		background: rgba(148, 163, 184, 0.03);
-		padding: var(--wa-space-s) var(--wa-space-m);
-		border-radius: var(--wa-border-radius-m);
-		border: 1px solid var(--wa-color-neutral-30);
-	}
-	.shared-title {
-		font-size: var(--wa-font-size-xs);
-		font-weight: 700;
-		color: var(--wa-color-neutral-60);
-		text-transform: uppercase;
-		letter-spacing: 0.5px;
-	}
-	.shared-list {
-		margin: var(--wa-space-2xs) 0 0 0;
-		padding: 0;
-		list-style: none;
-	}
-	.shared-item {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		padding: var(--wa-space-2xs) 0;
-		border-bottom: 1px solid var(--wa-color-neutral-20);
-		font-size: var(--wa-font-size-s);
-	}
-	.shared-user {
-		display: flex;
-		align-items: center;
-		gap: var(--wa-space-xs);
-		color: var(--wa-color-neutral-90);
-	}
-	.pending-badge {
-		font-size: var(--wa-font-size-2xs);
-		background-color: var(--wa-color-neutral-30);
-		color: var(--wa-color-neutral-70);
-		padding: var(--wa-space-3xs) var(--wa-space-2xs);
-		border-radius: var(--wa-border-radius-s);
-		font-weight: 600;
-		text-transform: uppercase;
-		margin-left: var(--wa-space-xs);
-		display: inline-flex;
-		align-items: center;
-	}
-	.btn-remove-email {
-		background: none;
-		border: none;
-		color: var(--wa-color-danger-60);
-		cursor: pointer;
-		padding: var(--wa-space-3xs) var(--wa-space-xs);
-		font-size: var(--wa-font-size-l);
-		font-weight: bold;
-	}
-	.btn-remove-email:hover {
-		color: var(--wa-color-danger-50);
 	}
 </style>

@@ -45,6 +45,13 @@
 			localStorage.setItem('theme', 'light')
 		}
 	}
+
+  function goToAdmin() {
+    window.open(
+      'https://listoxi-admin.emanuelsaramago.com/_',
+      '_blank'
+    )
+  }
 </script>
 
 <div class="container">
@@ -53,6 +60,10 @@
 			<wa-dropdown-item onclick={toggleTheme}>
 				<wa-icon slot="icon" name={isDark ? 'sun' : 'moon'}></wa-icon>
 				Alternar Tema
+			</wa-dropdown-item>
+			<wa-dropdown-item onclick={goToAdmin()}>
+				<wa-icon slot="icon" name="cog"></wa-icon>
+				Administração
 			</wa-dropdown-item>
 			<wa-dropdown-item onclick={logout}>
 				<wa-icon slot="icon" name="arrow-right-from-bracket"></wa-icon>

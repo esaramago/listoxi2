@@ -6,37 +6,13 @@
 	import Grid from '@/components/ui/Grid.svelte'
 	import Header from '@/components/Header.svelte'
 	import EmojiPicker from '@/components/EmojiPicker.svelte'
+	import ListSharing, { type SharedMember } from '@/components/ListSharing.svelte'
 
 	let listName = $state('')
 	let selectedEmoji = $state('')
-	let emailInput = $state('')
-	let sharedEmails = $state<string[]>([])
+	let sharedMembers = $state<SharedMember[]>([])
 	let loading = $state(false)
 	let errorMsg = $state('')
-
-	function addEmail(e: Event) {
-		e.preventDefault()
-		const email = emailInput.trim().toLowerCase()
-		if (!email) return
-
-		if (!email.includes('@')) {
-			errorMsg = 'Introduza um email válido.'
-			return
-		}
-
-		if (sharedEmails.includes(email)) {
-			errorMsg = 'Este email já foi adicionado.'
-			return
-		}
-
-		sharedEmails.push(email)
-		emailInput = ''
-		errorMsg = ''
-	}
-
-	function removeEmail(index: number) {
-		sharedEmails.splice(index, 1)
-	}
 
 	async function handleSave(e: SubmitEvent) {
 		e.preventDefault()
@@ -50,16 +26,28 @@
 			const listId = generatePocketBaseId()
 			const ownerId = pb.authStore.model?.id || ''
 
-			let sharedWithUserIds: string[] = []
+			// Membros resolvidos que o utilizador adicionou (se já forem registados)
+			const keptUserIds = sharedMembers
+				.filter(m => !m.isPending && m.id)
+				.map(m => m.id as string)
+
+			// Emails de utilizadores que necessitam de convite
+			const currentPendingEmails = sharedMembers
+				.filter(m => m.isPending)
+				.map(m => m.email)
+
+			let sharedWithUserIds = [...keptUserIds]
 			let pendingEmails: string[] = []
 
 			const online = $isOnline
 
-			if (online) {
-				for (const email of sharedEmails) {
+			if (online && currentPendingEmails.length > 0) {
+				for (const email of currentPendingEmails) {
 					try {
 						const userId = await inviteUserByEmail(email)
-						sharedWithUserIds.push(userId)
+						if (!sharedWithUserIds.includes(userId)) {
+							sharedWithUserIds.push(userId)
+						}
 					} catch (err: any) {
 						// Se for um erro do servidor permanente (como 400 ou 403) ou erro de perfil privado,
 						// mostramos o erro diretamente ao utilizador em vez de ignorar e guardar offline.
@@ -71,7 +59,7 @@
 					}
 				}
 			} else {
-				pendingEmails = [...sharedEmails]
+				pendingEmails = [...currentPendingEmails]
 			}
 
 			await db.lists.put({
@@ -121,46 +109,10 @@
 
 				<EmojiPicker label="Emoji da Lista" bind:value={selectedEmoji} />
 
-        <Grid direction="column" gap="s">
-          <Grid align="end" gap="s">
-            <wa-input
-              id="share-email"
-              label="Partilhar com (Email)"
-              help-text="Os utilizadores serão convidados se ainda não estiverem registados."
-              type="email"
-              placeholder="amigo@email.com"
-              value={emailInput}
-              oninput={(e: any) => emailInput = e.target.value}
-              onkeydown={(e: any) => e.key === 'Enter' && (e.preventDefault(), addEmail(e))}
-              class="input-grow"
-            ></wa-input>
-            <wa-button  onclick={addEmail} class="btn-add-email">
-              <wa-icon slot="prefix" name="plus"></wa-icon>
-              Adicionar
-            </wa-button>
-          </Grid>
-
-          {#if sharedEmails.length > 0}
-            <div class="shared-emails-container">
-              <span class="shared-title">Emails Adicionados</span>
-              <ul class="shared-list">
-                {#each sharedEmails as email, idx}
-                  <li class="shared-item">
-                    <span class="shared-user">
-                      👤 {email}
-                    </span>
-                    <button type="button" onclick={() => removeEmail(idx)} class="btn-remove-email">
-                      &times;
-                    </button>
-                  </li>
-                {/each}
-              </ul>
-            </div>
-          {/if}
-        </Grid>
+				<ListSharing bind:sharedMembers />
 
 				<Grid gap="m" justify="end">
-					<wa-button  href="/">
+					<wa-button href="/">
 						Cancelar
 					</wa-button>
 					<wa-button type="submit" variant="brand" loading={loading ? true : undefined}>
@@ -177,53 +129,6 @@
 		margin-bottom: var(--wa-space-m);
 	}
 	.icon-danger {
-		color: var(--wa-color-danger-50);
-	}
-	:global(.input-grow) {
-		flex-grow: 1;
-	}
-	.shared-emails-container {
-		background: rgba(148, 163, 184, 0.03);
-		padding: var(--wa-space-s) var(--wa-space-m);
-		border-radius: var(--wa-border-radius-m);
-		border: 1px solid var(--wa-color-neutral-30);
-	}
-	.shared-title {
-		font-size: var(--wa-font-size-xs);
-		font-weight: 700;
-		color: var(--wa-color-neutral-60);
-		text-transform: uppercase;
-		letter-spacing: 0.5px;
-	}
-	.shared-list {
-		margin: var(--wa-space-2xs) 0 0 0;
-		padding: 0;
-		list-style: none;
-	}
-	.shared-item {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		padding: var(--wa-space-2xs) 0;
-		border-bottom: 1px solid var(--wa-color-neutral-20);
-		font-size: var(--wa-font-size-s);
-	}
-	.shared-user {
-		display: flex;
-		align-items: center;
-		gap: var(--wa-space-xs);
-		color: var(--wa-color-neutral-90);
-	}
-	.btn-remove-email {
-		background: none;
-		border: none;
-		color: var(--wa-color-danger-60);
-		cursor: pointer;
-		padding: var(--wa-space-3xs) var(--wa-space-xs);
-		font-size: var(--wa-font-size-l);
-		font-weight: bold;
-	}
-	.btn-remove-email:hover {
 		color: var(--wa-color-danger-50);
 	}
 </style>
