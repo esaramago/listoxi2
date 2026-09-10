@@ -10,8 +10,9 @@
 
 	let isDarkMode = $state(false)
 	let componentsLoaded = $state(false)
+	let authChecked = $state(false)
 
-	// Safe routing check
+	// Safe routing check - use onMount to avoid infinite loops
 	onMount(async () => {
 		// Import Web Awesome web components client-side
 		try {
@@ -29,6 +30,7 @@
 			componentsLoaded = true
 		} catch (err) {
 			console.error('Failed to load Web Awesome elements:', err)
+			componentsLoaded = true // Still render even if components fail
 		}
 
 		// Theme initialization
@@ -42,13 +44,20 @@
 			isDarkMode = false;
 			document.documentElement.classList.remove('wa-dark')
 		}
+
+		// Mark auth check as complete
+		authChecked = true
 	})
 
-	// Svelte 5 reactive effect for routing auth check
+	// Handle auth routing - use reactive statement instead of $effect to avoid loops
 	$effect(() => {
 		const user = $currentUser
 		const path = $page.url.pathname
 
+		// Only check after initial auth check is complete
+		if (!authChecked) return
+
+		// Prevent infinite loop by checking current path before redirecting
 		if (!user && path !== '/login') {
 			goto('/login')
 		} else if (user && path === '/login') {
@@ -59,7 +68,7 @@
 
 <svelte:head>
 	<title>Listoxi - Lista de Compras Offline</title>
-	<meta name="description" content="Aplicação de lista de compras offline-first com sincronização em tempo real." />
+	<meta name="description" content="Aplica\u00e7\u00e3o de lista de compras offline-first com sincroniza\u00e7\u00e3o em tempo real." />
 </svelte:head>
 
 {#if componentsLoaded}
