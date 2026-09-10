@@ -9,6 +9,8 @@ export interface LocalList {
 	sync_status: 'synced' | 'created' | 'updated' | 'deleted';
 	updated: string; // ISO string
 	emoji?: string;
+	// User-specific sort order: maps userId to their sort index
+	user_sort_order?: Record<string, number>;
 }
 
 export interface LocalItem {
@@ -29,9 +31,17 @@ class ListoxiDatabase extends Dexie {
 
 	constructor() {
 		super('ListoxiDatabase');
-		this.version(1).stores({
+		this.version(2).stores({
 			lists: 'id, name, owner, sync_status, updated',
 			items: 'id, list, name, bought, sync_status, updated'
+		}).upgrade(async (tx) => {
+			// Migration from v1 to v2: add user_sort_order field
+			const lists = await tx.table('lists').toArray();
+			for (const list of lists) {
+				if (!list.user_sort_order) {
+					await tx.table('lists').update(list.id, { user_sort_order: {} });
+				}
+			}
 		});
 	}
 }

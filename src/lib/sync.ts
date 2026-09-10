@@ -84,7 +84,8 @@ export async function triggerSync() {
 						name: list.name,
 						owner: list.owner,
 						shared_with: list.shared_with,
-						emoji: list.emoji || ''
+						emoji: list.emoji || '',
+						user_sort_order: list.user_sort_order || {}
 					});
 					await db.lists.update(list.id, { sync_status: 'synced' });
 				} catch (err: any) {
@@ -100,7 +101,8 @@ export async function triggerSync() {
 					await pb.collection('lists').update(list.id, {
 						name: list.name,
 						shared_with: list.shared_with,
-						emoji: list.emoji || ''
+						emoji: list.emoji || '',
+						user_sort_order: list.user_sort_order || {}
 					});
 					await db.lists.update(list.id, { sync_status: 'synced' });
 				} catch (err: any) {
@@ -191,6 +193,16 @@ export async function triggerSync() {
 			const existing = await db.lists.get(rList.id);
 			// Only overwrite if local status is 'synced' (no offline pending edits)
 			if (!existing || existing.sync_status === 'synced') {
+				// Merge user_sort_order: preserve current user's sort order from local
+				const existingUserSortOrder = existing?.user_sort_order || {};
+				const remoteUserSortOrder = rList.user_sort_order || {};
+				const mergedUserSortOrder = { ...remoteUserSortOrder };
+				
+				// Preserve current user's sort order from local if it exists
+				if (user && existingUserSortOrder[user.id] !== undefined) {
+					mergedUserSortOrder[user.id] = existingUserSortOrder[user.id];
+				}
+				
 				await db.lists.put({
 					id: rList.id,
 					name: rList.name,
@@ -198,7 +210,8 @@ export async function triggerSync() {
 					shared_with: rList.shared_with || [],
 					sync_status: 'synced',
 					updated: rList.updated,
-					emoji: rList.emoji || ''
+					emoji: rList.emoji || '',
+					user_sort_order: mergedUserSortOrder
 				});
 			}
 		}
@@ -273,6 +286,16 @@ export function setupRealtimeSubscriptions() {
 				if (isOwner || isShared) {
 					const existing = await db.lists.get(list.id);
 					if (!existing || existing.sync_status === 'synced') {
+						// Merge user_sort_order: preserve current user's sort order
+						const existingUserSortOrder = existing?.user_sort_order || {};
+						const remoteUserSortOrder = list.user_sort_order || {};
+						const mergedUserSortOrder = { ...remoteUserSortOrder };
+						
+						// Preserve current user's sort order from local if it exists
+						if (user && existingUserSortOrder[user.id] !== undefined) {
+							mergedUserSortOrder[user.id] = existingUserSortOrder[user.id];
+						}
+						
 						await db.lists.put({
 							id: list.id,
 							name: list.name,
@@ -280,7 +303,8 @@ export function setupRealtimeSubscriptions() {
 							shared_with: list.shared_with || [],
 							sync_status: 'synced',
 							updated: list.updated,
-							emoji: list.emoji || ''
+							emoji: list.emoji || '',
+							user_sort_order: mergedUserSortOrder
 						});
 					}
 				} else {
