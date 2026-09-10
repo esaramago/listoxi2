@@ -33,70 +33,96 @@
 			const bOrder = b.user_sort_order?.[userId] ?? Number.MAX_SAFE_INTEGER;
 			return aOrder - bOrder;
 		}) || []
-	);
+	)
 
-	// Reorder a list by swapping positions
-	async function reorderList(listId: string, newIndex: number) {
-		if (!userId) return;
+	// Drag and drop state
+	let draggedIndex = $state<number | null>(null)
+	let dragOverIndex = $state<number | null>(null)
 
-		const allLists = await db.lists.where('sync_status').notEqual('deleted').toArray();
+	// Reorder lists during drag for immediate visual feedback
+	const displayLists = $derived.by(() => {
+		if (draggedIndex === null || dragOverIndex === null || draggedIndex === dragOverIndex) {
+			return sortedLists
+		}
 		
-		// Find the list we're moving
-		const listToMove = await db.lists.get(listId);
-		if (!listToMove) return;
+		const newLists = [...sortedLists]
+		const [draggedItem] = newLists.splice(draggedIndex, 1)
+		newLists.splice(dragOverIndex, 0, draggedItem)
+		return newLists
+	})
 
-		// Get the current index of the list we're moving
-		const currentIndex = sortedLists.findIndex(l => l.id === listId);
-		if (currentIndex === -1) return;
+	function handleDragStart(e: DragEvent, index: number) {
+		draggedIndex = index
+		const dt = e.dataTransfer
+		if (dt) {
+			dt.setData('text/plain', index.toString())
+			dt.effectAllowed = 'move'
+		}
+	}
 
-		// Build new sort orders for all lists
-		const newSortOrders: Record<string, Record<string, number>> = {};
-		
+	function handleDragOver(e: DragEvent, index: number) {
+		e.preventDefault()
+		dragOverIndex = index
+	}
+
+	function handleDragLeave() {
+		dragOverIndex = null
+	}
+
+	async function handleDrop(e: DragEvent, dropIndex: number) {
+		e.preventDefault()
+		if (draggedIndex === null || draggedIndex === dropIndex) {
+			draggedIndex = null
+			dragOverIndex = null
+			return
+		}
+
+		// Update all lists with new sort orders in the database
 		for (let i = 0; i < sortedLists.length; i++) {
-			const list = sortedLists[i];
-			const currentOrder = list.user_sort_order || {};
+			const list = sortedLists[i]
+			let newIndex: number
 			
-			if (list.id === listId) {
-				// This is the list being moved
-				newSortOrders[list.id] = { ...currentOrder, [userId]: newIndex };
-			} else if (i === newIndex) {
-				// The list that was at newIndex gets moved to currentIndex
-				newSortOrders[list.id] = { ...currentOrder, [userId]: currentIndex };
+			if (i === draggedIndex) {
+				newIndex = dropIndex
+			} else if (i === dropIndex) {
+				newIndex = draggedIndex
+			} else if (draggedIndex < dropIndex) {
+				// Items between draggedIndex and dropIndex move down
+				if (i > draggedIndex && i <= dropIndex) {
+					newIndex = i - 1
+				} else {
+					newIndex = i
+				}
 			} else {
-				// All other lists keep their order
-				newSortOrders[list.id] = currentOrder;
+				// Items between dropIndex and draggedIndex move up
+				if (i >= dropIndex && i < draggedIndex) {
+					newIndex = i + 1
+				} else {
+					newIndex = i
+				}
 			}
+			
+			const currentSortOrder = list.user_sort_order || {}
+			const updatedSortOrder = { ...currentSortOrder, [userId]: newIndex }
+			
+			await db.lists.update(list.id, {
+				user_sort_order: updatedSortOrder,
+				sync_status: list.sync_status === 'created' ? 'created' : 'updated',
+				updated: new Date().toISOString()
+			})
 		}
 
-		// Update all affected lists
-		for (const [listIdToUpdate, sortOrder] of Object.entries(newSortOrders)) {
-			const list = await db.lists.get(listIdToUpdate);
-			if (list) {
-				await db.lists.update(listIdToUpdate, {
-					user_sort_order: sortOrder,
-					sync_status: list.sync_status === 'created' ? 'created' : 'updated',
-					updated: new Date().toISOString()
-				});
-			}
-		}
-		
-		triggerSync();
+		// Trigger sync in background
+		triggerSync()
+
+		// Reset drag state
+		draggedIndex = null
+		dragOverIndex = null
 	}
 
-	// Move list up in the order
-	async function moveListUp(listId: string) {
-		const listIndex = sortedLists.findIndex(l => l.id === listId);
-		if (listIndex > 0) {
-			await reorderList(listId, listIndex - 1);
-		}
-	}
-
-	// Move list down in the order
-	async function moveListDown(listId: string) {
-		const listIndex = sortedLists.findIndex(l => l.id === listId);
-		if (listIndex >= 0 && listIndex < sortedLists.length - 1) {
-			await reorderList(listId, listIndex + 1);
-		}
+	function handleDragEnd() {
+		draggedIndex = null
+		dragOverIndex = null
 	}
 
 	function logout() {
@@ -174,50 +200,44 @@
             Adicionar lista
           </wa-button>
         </Grid>
-        {#each sortedLists as list (list.id)}
-          <div class="card-container">
-            <a href="/lists/{list.id}" class="card">
-              <wa-card>
-                <div>
-                  {#if list.emoji}
-                    {list.emoji}
-                  {:else}
-                    \ud83c\udf4f
-                  {/if}
-                  <span>{list.name}</span>
-                </div>
-                <div class="card__count">
-                  <span class="card__number">{list.count}</span>
-                  <span class="card__label">
-                    {list.count === 1 ? 'produto' : 'produtos'}
-                  </span>
-                </div>
-              </wa-card>
-            </a>
-            <div class="card-actions">
-              <wa-button 
-                circle 
-                appearance="plain" 
-                variant="neutral"
-                onclick={(e) => { e.preventDefault(); e.stopPropagation(); moveListUp(list.id); }}
-                disabled={sortedLists[0]?.id === list.id}
-                title="Mover para cima"
-              >
-                <wa-icon name="chevron-up"></wa-icon>
-              </wa-button>
-              <wa-button 
-                circle 
-                appearance="plain" 
-                variant="neutral"
-                onclick={(e) => { e.preventDefault(); e.stopPropagation(); moveListDown(list.id); }}
-                disabled={sortedLists[sortedLists.length - 1]?.id === list.id}
-                title="Mover para baixo"
-              >
-                <wa-icon name="chevron-down"></wa-icon>
-              </wa-button>
+        
+        <div class="lists-container">
+          {#each displayLists as list, index (list.id)}
+            <div 
+              class="draggable-list" 
+              class:dragging={draggedIndex === index}
+              class:drag-over={dragOverIndex === index}
+              draggable="true"
+              ondragstart={(e) => handleDragStart(e, sortedLists.findIndex(l => l.id === list.id))}
+              ondragover={(e) => handleDragOver(e, index)}
+              ondragleave={handleDragLeave}
+              ondrop={(e) => handleDrop(e, index)}
+              ondragend={handleDragEnd}
+            >
+              <div class="drag-handle">
+                <wa-icon name="grip-vertical" class="drag-icon"></wa-icon>
+              </div>
+              <a href="/lists/{list.id}" class="card">
+                <wa-card>
+                  <div>
+                    {#if list.emoji}
+                      {list.emoji}
+                    {:else}
+                      \ud83c\udf4f
+                    {/if}
+                    <span>{list.name}</span>
+                  </div>
+                  <div class="card__count">
+                    <span class="card__number">{list.count}</span>
+                    <span class="card__label">
+                      {list.count === 1 ? 'produto' : 'produtos'}
+                    </span>
+                  </div>
+                </wa-card>
+              </a>
             </div>
-          </div>
-        {/each}
+          {/each}
+        </div>
       </Grid>
 		{/if}
 	</div>
@@ -230,12 +250,64 @@
   padding: var(--wa-space-2xl);
   color: var(--wa-color-neutral-60);
 }
-.card-container {
+
+.lists-container {
+  position: relative;
+  width: 100%;
+}
+
+.draggable-list {
   display: flex;
   width: 100%;
   align-items: center;
   gap: var(--wa-space-s);
+  cursor: grab;
+  transition: all 0.2s ease;
+  position: relative;
+  z-index: 1;
 }
+
+.draggable-list:active {
+  cursor: grabbing;
+}
+
+.draggable-list.dragging {
+  opacity: 0.5;
+  z-index: 100;
+}
+
+.draggable-list.drag-over {
+  border-top: 2px solid var(--wa-color-brand-50);
+}
+
+.drag-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 48px;
+  cursor: grab;
+  color: var(--wa-color-neutral-50);
+  flex-shrink: 0;
+  transition: color 0.2s ease;
+}
+
+.drag-handle:hover {
+  color: var(--wa-color-brand-50);
+}
+
+.draggable-list:hover .drag-handle {
+  color: var(--wa-color-brand-50);
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.drag-icon {
+  font-size: var(--wa-font-size-m);
+}
+
 .card {
   display: flex;
   flex: 1;
@@ -252,20 +324,18 @@
     }
   }
 }
-.card-actions {
-  display: flex;
-  flex-direction: column;
-  gap: var(--wa-space-3xs);
-}
+
 .card__count {
   display: flex;
   flex-direction: column;
   text-align: center;
 }
+
 .card__number {
   font-size: var(--wa-font-size-3xl);
   font-weight: 900;
 }
+
 .card__label {
   font-size: var(--wa-font-size-s);
   font-weight: 400;
