@@ -39,17 +39,25 @@
 	let draggedId = $state<string | null>(null)
 	let dragOverIndex = $state<number | null>(null)
 
-	// Current order during drag for immediate visual feedback
-	let currentOrder = $state<string[]>([])
+	// Get the current order from sortedLists
+	const currentOrder = $derived(sortedLists.map(l => l.id))
 
-	// Initialize current order from sortedLists
-	$effect(() => {
-		currentOrder = sortedLists.map(l => l.id)
+	// Display lists with drag reordering
+	const displayLists = $derived.by(() => {
+		if (draggedId === null || dragOverIndex === null) {
+			return sortedLists
+		}
+		const draggedIndex = currentOrder.indexOf(draggedId)
+		if (draggedIndex === -1 || draggedIndex === dragOverIndex) {
+			return sortedLists
+		}
+		const newOrder = [...currentOrder]
+		newOrder.splice(draggedIndex, 1)
+		newOrder.splice(dragOverIndex, 0, draggedId)
+		return newOrder.map(id => sortedLists.find(l => l.id === id)).filter(Boolean) as typeof sortedLists
 	})
 
 	function handleDragStart(e: DragEvent, listId: string) {
-		e.stopPropagation()
-		e.preventDefault()
 		draggedId = listId
 		const dt = e.dataTransfer
 		if (dt) {
@@ -60,23 +68,15 @@
 
 	function handleDragOver(e: DragEvent, index: number) {
 		e.preventDefault()
-		e.stopPropagation()
 		dragOverIndex = index
 	}
 
-	function handleDragLeave(e: DragEvent) {
-		e.preventDefault()
-		e.stopPropagation()
-		// Only clear if we're leaving the actual target, not a child
-		const relatedTarget = e.relatedTarget as HTMLElement
-		if (relatedTarget && !relatedTarget.closest('.draggable-list')) {
-			dragOverIndex = null
-		}
+	function handleDragLeave() {
+		dragOverIndex = null
 	}
 
 	async function handleDrop(e: DragEvent, dropIndex: number) {
 		e.preventDefault()
-		e.stopPropagation()
 		
 		if (draggedId === null) {
 			draggedId = null
@@ -96,7 +96,6 @@
 		const newOrder = [...currentOrder]
 		newOrder.splice(draggedIndex, 1)
 		newOrder.splice(dropIndex, 0, draggedId)
-		currentOrder = newOrder
 
 		// Update all lists with new sort orders in the database
 		for (let i = 0; i < sortedLists.length; i++) {
@@ -121,17 +120,10 @@
 		dragOverIndex = null
 	}
 
-	function handleDragEnd(e: DragEvent) {
-		e.preventDefault()
-		e.stopPropagation()
+	function handleDragEnd() {
 		draggedId = null
 		dragOverIndex = null
 	}
-
-	// Display lists based on current order
-	const displayLists = $derived.by(() => {
-		return currentOrder.map(listId => sortedLists.find(l => l.id === listId)).filter(Boolean) as typeof sortedLists
-	})
 
 	function logout() {
 		if (confirm('Deseja realmente sair?')) {
@@ -218,11 +210,11 @@
               draggable="true"
               ondragstart={(e) => handleDragStart(e, list.id)}
               ondragover={(e) => handleDragOver(e, index)}
-              ondragleave={(e) => handleDragLeave(e)}
+              ondragleave={handleDragLeave}
               ondrop={(e) => handleDrop(e, index)}
-              ondragend={(e) => handleDragEnd(e)}
+              ondragend={handleDragEnd}
             >
-              <div class="drag-handle" ondragstart={(e) => e.stopPropagation()}>
+              <div class="drag-handle">
                 <wa-icon name="grip-vertical" class="drag-icon"></wa-icon>
               </div>
               <a href="/lists/{list.id}" class="card">
@@ -301,6 +293,8 @@
   flex-shrink: 0;
   transition: color 0.2s ease, background-color 0.2s ease;
   border-radius: var(--wa-border-radius-s);
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .drag-handle:hover {
@@ -319,6 +313,7 @@
 
 .drag-icon {
   font-size: var(--wa-font-size-m);
+  pointer-events: none;
 }
 
 .card {
@@ -328,14 +323,16 @@
   justify-content: space-between;
   font-weight: 700;
   font-size: var(--wa-font-size-xl);
-  wa-card {
-    width: 100%;
-    &::part(body) {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-  }
+}
+
+.card wa-card {
+  width: 100%;
+}
+
+.card wa-card::part(body) {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .card__count {
