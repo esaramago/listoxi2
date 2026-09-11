@@ -7,10 +7,11 @@
 	import Grid from '@/components/ui/Grid.svelte'
 	import Header from '@/components/Header.svelte'
   import ProductCard from '@/components/ProductCard.svelte'
-	import { pb } from '@/lib/pb'
+	import { pb, currentUser } from '@/lib/pb'
 	import SyncBadge from '@/components/SyncBadge.svelte'
 
 	const listId = $page.params.listId || ''
+	const user = $currentUser
 
 	let memberEmails = $state<string[]>([])
 
@@ -134,30 +135,38 @@
     }
 	}
 
-	async function deleteList() {
-		if (confirm('Tem a certeza que deseja apagar esta lista e todos os seus produtos?')) {
+	async function leaveList() {
+		if (confirm('Tem a certeza que deseja sair desta lista?')) {
 			const currentList = await db.lists.get(listId)
-			if (currentList) {
-				if (currentList.sync_status === 'created') {
-					await db.lists.delete(listId)
-					await db.items.where('list').equals(listId).delete()
-				} else {
-					await db.lists.update(listId, {
-						sync_status: 'deleted',
-						updated: new Date().toISOString()
-					})
-					// Soft delete all items in this list
-					const itemsInList = await db.items.where('list').equals(listId).toArray()
-					for (const item of itemsInList) {
-						if (item.sync_status === 'created') {
-							await db.items.delete(item.id)
-						} else {
-							await db.items.update(item.id, {
-								sync_status: 'deleted',
-								updated: new Date().toISOString()
-							})
+			if (currentList && user) {
+				if (currentList.owner === user.id) {
+					// If user is owner, delete the list completely
+					if (currentList.sync_status === 'created') {
+						await db.lists.delete(listId)
+						await db.items.where('list').equals(listId).delete()
+					} else {
+						await db.lists.update(listId, {
+							sync_status: 'deleted',
+							updated: new Date().toISOString()
+						})
+						// Soft delete all items in this list
+						const itemsInList = await db.items.where('list').equals(listId).toArray()
+						for (const item of itemsInList) {
+							if (item.sync_status === 'created') {
+								await db.items.delete(item.id)
+							} else {
+								await db.items.update(item.id, {
+									sync_status: 'deleted',
+									updated: new Date().toISOString()
+								})
+							}
 						}
 					}
+				} else {
+					// If user is only a member (not owner), just remove locally
+					// Don't sync to server - user doesn't have permission to modify the list
+					await db.lists.delete(listId)
+					await db.items.where('list').equals(listId).delete()
 				}
 				triggerSync()
 				goto('/')
@@ -230,9 +239,9 @@
 					<wa-icon slot="icon" name="pen"></wa-icon>
 					Editar Lista
 				</wa-dropdown-item>
-				<wa-dropdown-item onclick={deleteList} variant="danger">
+				<wa-dropdown-item onclick={leaveList} variant="danger">
 					<wa-icon slot="icon" name="trash"></wa-icon>
-					Apagar Lista
+					Sair da Lista
 				</wa-dropdown-item>
 			{/if}
 		{/snippet}
